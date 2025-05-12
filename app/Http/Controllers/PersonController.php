@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Models\Province;
+
 class PersonController extends Controller
 {
     public function index()

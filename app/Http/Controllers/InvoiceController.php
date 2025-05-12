@@ -1,55 +1,29 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Product;
-use App\Models\Currency;
-use App\Models\Person;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Morilog\Jalali\Jalalian;
 
 class InvoiceController extends Controller
 {
-    // نمایش لیست فاکتورها
-    public function index()
-    {
-        $invoices = Invoice::with(['customer'])->orderBy('id', 'desc')->paginate(15);
-        return view('invoices.index', compact('invoices'));
-    }
-
-    // نمایش فرم صدور فاکتور
     public function create()
     {
-        $currencies = Currency::orderBy('title')->get();
-        $customers = Person::orderBy('first_name')->orderBy('last_name')->get();
-        $products  = Product::orderBy('name')->get();
-
-        // شماره بعدی فاکتور (اگر نیاز داری)
-        $last = Invoice::where('invoice_number', 'LIKE', 'invoices-%')
-            ->orderByRaw("CAST(SUBSTRING(invoice_number, 10) AS UNSIGNED) DESC")
-            ->first();
-        if ($last) {
-            $lastNum = intval(substr($last->invoice_number, 9));
-            $nextInvoiceNumber = "invoices-" . ($lastNum + 1);
-        } else {
-            $nextInvoiceNumber = "invoices-10001";
-        }
-
-        return view('invoices.create', compact('currencies', 'customers', 'products', 'nextInvoiceNumber'));
+        $currencies = \App\Models\Currency::orderBy('title')->get();
+        return view('invoices.create', compact('currencies'));
     }
 
-    // گرفتن شماره بعدی فاکتور (برای ajax)
     public function getNextNumber()
     {
-        $last = Invoice::where('invoice_number', 'LIKE', 'invoices-%')
-            ->orderByRaw("CAST(SUBSTRING(invoice_number, 10) AS UNSIGNED) DESC")
+        $last = Invoice::where('number', 'LIKE', 'invoices-%')
+            ->whereRaw("number REGEXP '^invoices-[0-9]+$'")
+            ->orderByRaw("CAST(SUBSTRING(number, 10) AS UNSIGNED) DESC")
             ->first();
 
         if ($last) {
-            $lastNum = intval(substr($last->invoice_number, 9));
+            $lastNum = intval(substr($last->number, 9));
             $next = $lastNum + 1;
         } else {
             $next = 10001;
@@ -57,85 +31,107 @@ class InvoiceController extends Controller
         return response()->json(['number' => "invoices-$next"]);
     }
 
-    // ذخیره فاکتور جدید
     public function store(Request $request)
     {
         $request->validate([
-            'invoiceNumber'    => 'required|string|unique:invoices,invoice_number',
-            'date'             => 'required|string',
-            'dueDate'          => 'required|string',
-            'customer_id'      => 'required|integer|exists:persons,id',
-            'seller'           => 'nullable|integer',
-            'currency_id'      => 'required|integer|exists:currencies,id',
+            'invoiceNumber' => 'required|string|unique:invoices,number',
+            'date' => 'required|string',
+            'dueDate' => 'required|string',
+            'customer_id' => 'required|integer|exists:persons,id',
+            'seller'      => 'nullable|integer|exists:sellers,id',
+            'currency_id' => 'required|integer|exists:currencies,id',
             'discount_percent' => 'nullable|numeric|min:0|max:100',
             'discount_amount'  => 'nullable|numeric|min:0',
             'tax_percent'      => 'nullable|numeric|min:0|max:100',
-            'products'         => 'required|array|min:1',
-            'products.*.qty'   => 'required|numeric|min:1',
+            'products'   => 'required|array|min:1',
+            'products.*.qty' => 'required|numeric|min:1',
             'products.*.price' => 'required|numeric|min:0',
         ], [
             'products.required' => 'حداقل یک محصول باید انتخاب شود.',
             'customer_id.required' => 'مشتری را انتخاب کنید.'
         ]);
 
-        try {
-            $invoiceDate = Jalalian::fromFormat('Y/m/d', $request->date)->toCarbon();
-            $dueDate    = Jalalian::fromFormat('Y/m/d', $request->dueDate)->toCarbon();
-        } catch (\Exception $e) {
-            return back()->withErrors(['date' => 'فرمت تاریخ معتبر نیست یا مقدار تاریخ خالی است.']);
+
+        // اعتبارسنجی داده‌ها
+    $validated = $request->validate([
+        'invoice_number' => 'required|numeric|unique:invoices,invoice_number',
+        'date'           => 'required|date',
+        'due_date'       => 'required|date',
+        'customer_id'    => 'required|exists:people,id',
+        'currency_id'    => 'required|exists:currencies,id',
+        'seller_id'      => 'required|exists:users,id',
+        // سایر فیلدهای مورد نیاز...
+    ]);
+
+    // ساخت فاکتور
+    $invoice = Invoice::create($validated);
+
+    // ذخیره آیتم‌های فاکتور (در صورت ارسال)
+    if ($request->has('items')) {
+        foreach ($request->items as $item) {
+            $invoice->items()->create([
+                'product_id' => $item['product_id'],
+                'qty'        => $item['qty'],
+                'price'      => $item['price'],
+                'total'      => $item['total'],
+            ]);
         }
+    }
+
+    return redirect()->route('invoices.index')->with('success', 'فاکتور با موفقیت ثبت شد.');
+
+
 
         DB::beginTransaction();
         try {
-            $total = 0;
+            // محاسبه مبلغ‌ها
             $items = [];
+            $total = 0;
             foreach ($request->products as $id => $row) {
-                $qty   = floatval($row['qty']);
+                $qty = floatval($row['qty']);
                 $price = floatval($row['price']);
-                $total += $qty * $price;
+                $total += $price * $qty;
                 $items[] = [
                     'product_id' => $id,
-                    'qty'        => $qty,
-                    'price'      => $price,
-                    'total'      => $qty * $price,
+                    'price' => $price,
+                    'qty'   => $qty,
                 ];
             }
 
-            $discount_amount  = $request->discount_amount  ? floatval($request->discount_amount)  : 0;
+            $discount_amount = $request->discount_amount ? floatval($request->discount_amount) : 0;
             $discount_percent = $request->discount_percent ? floatval($request->discount_percent) : 0;
             if ($discount_amount <= 0 && $discount_percent > 0) {
                 $discount_amount = ($total * $discount_percent) / 100;
             }
             $after_discount = $total - $discount_amount;
-            $tax_percent    = $request->tax_percent ? floatval($request->tax_percent) : 0;
-            $tax_amount     = ($after_discount * $tax_percent) / 100;
-            $final_amount   = $after_discount + $tax_amount;
+            $tax_percent = $request->tax_percent ? floatval($request->tax_percent) : 0;
+            $tax_amount = ($after_discount * $tax_percent) / 100;
+            $final_amount = $after_discount + $tax_amount;
 
             $invoice = Invoice::create([
-                'invoice_number'    => $request->invoiceNumber,
-                'date'              => $invoiceDate,
-                'due_date'          => $dueDate,
-                'customer_id'       => $request->customer_id,
-                'seller_id'         => $request->seller,
-                'currency_id'       => $request->currency_id,
-                'reference'         => $request->reference,
-                'discount_percent'  => $discount_percent,
-                'discount_amount'   => $discount_amount,
-                'tax_percent'       => $tax_percent,
-                'tax_amount'        => $tax_amount,
-                'total_amount'      => $total,
-                'final_amount'      => $final_amount,
+                'number' => $request->invoiceNumber,
+                'date' => $request->date,
+                'due_date' => $request->dueDate,
+                'customer_id' => $request->customer_id,
+                'seller_id'   => $request->seller,
+                'currency_id' => $request->currency_id,
+                'discount_percent' => $discount_percent,
+                'discount_amount'  => $discount_amount,
+                'tax_percent'      => $tax_percent,
+                'tax_amount'       => $tax_amount,
+                'total' => $total,
+                'final_amount' => $final_amount,
             ]);
 
+            // ذخیره ردیف‌های فاکتور و کم کردن موجودی انبار
             foreach ($items as $item) {
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
                     'product_id' => $item['product_id'],
-                    'qty'        => $item['qty'],
                     'price'      => $item['price'],
-                    'total'      => $item['total'],
+                    'qty'        => $item['qty'],
                 ]);
-                // اگر می‌خواهی موجودی کم شود:
+                // کم کردن موجودی انبار
                 $product = Product::find($item['product_id']);
                 if ($product) {
                     $product->stock = max(0, $product->stock - $item['qty']);
@@ -144,33 +140,19 @@ class InvoiceController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('invoices.index')->with('success', 'فاکتور با موفقیت ثبت شد.');
+            // ریدایرکت به صفحه نمایش فاکتور
+            return redirect()->route('invoices.show', $invoice->id)->with('success', 'فاکتور با موفقیت ثبت شد.');
         } catch (\Throwable $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'خطا در ثبت فاکتور، لطفا دوباره تلاش کنید. ' . $e->getMessage()]);
         }
     }
 
-    // نمایش فاکتور
+    // اگر متد show نداری حتما اضافه کن تا فاکتور نمایش داده شود
     public function show($id)
     {
         $invoice = Invoice::with(['items.product', 'customer'])->findOrFail($id);
         return view('invoices.show', compact('invoice'));
     }
-
-    // چاپ فاکتور
-    public function print($id)
-    {
-        $invoice = Invoice::with(['items.product', 'customer'])->findOrFail($id);
-        return view('invoices.print', compact('invoice'));
-    }
-
-    // تایید پرداخت فاکتور
-    public function pay($id)
-    {
-        $invoice = Invoice::findOrFail($id);
-        $invoice->status = 'paid';
-        $invoice->save();
-        return redirect()->route('invoices.index')->with('success', 'پرداخت فاکتور تایید شد.');
-    }
+    
 }

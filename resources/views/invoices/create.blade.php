@@ -127,6 +127,12 @@
                                 <label class="form-label required-field" for="customer_select">مشتری</label>
                                 <select id="customer_select" name="customer_id" class="form-control select2" required>
                                     <option value="">انتخاب مشتری...</option>
+                                    @foreach($customers as $customer)
+                                        <option value="{{ $customer->id }}"
+                                            {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                                            {{ $customer->company_name ? $customer->company_name : ($customer->first_name . ' ' . $customer->last_name) }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -187,8 +193,6 @@
 
                     <!-- تخفیف و مالیات -->
                     <div class="discount-tax-section">
-
-
                         <div class="form-group">
                             <label for="tax_percent">درصد مالیات</label>
                             <input type="number" id="tax_percent" name="tax_percent"
@@ -220,8 +224,6 @@
                             <span>جمع کل:</span>
                             <span><span id="totalAmount">۰</span> ریال</span>
                         </div>
-
-
                         <div class="amount-row">
                             <span>مبلغ نهایی:</span>
                             <span><span id="finalAmount">۰</span> ریال</span>
@@ -249,9 +251,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/invoice-create.js') }}"></script>
 
-
-
-      <script>
+    <script>
 document.addEventListener('DOMContentLoaded', function() {
     // مقدار شماره فاکتور را هنگام لود از سرور بگیر
     fetch('/invoices/next-number')
@@ -303,7 +303,5 @@ $(document).ready(function() {
     });
 
 });
-
-
-     </script>
-    @endpush
+    </script>
+@endpush

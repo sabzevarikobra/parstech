@@ -302,4 +302,5 @@ $(document).ready(function () {
         let finalAmount = afterDiscount + taxValue;
         $('#finalAmount').text(toFaNum(finalAmount, 2));
     }
+    
 });

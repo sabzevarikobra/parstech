@@ -167,4 +167,7 @@ Route::get('/invoices/{id}/pdf', [\App\Http\Controllers\InvoiceController::class
 Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
 Route::get('categories/list', [CategoryController::class, 'list']);
 Route::get('categories/list', [CategoryController::class, 'apiList']);
+
+Route::get('/api/products/search', [ProductController::class, 'search']);
+
 require __DIR__.'/auth.php';

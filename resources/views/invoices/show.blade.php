@@ -1,84 +1,111 @@
 @extends('layouts.app')
-@section('title', 'جزئیات فاکتور')
+
+@push('styles')
+    <link href="{{ asset('css/invoice-create.css') }}" rel="stylesheet" />
+@endpush
 
 @section('content')
-<div class="container py-4">
-    <div class="d-flex justify-content-between mb-3">
-        <h3>جزئیات فاکتور #{{ $invoice->invoice_number }}</h3>
-        <a href="{{ route('invoices.index') }}" class="btn btn-link">بازگشت به لیست</a>
+<div class="page-wrapper">
+    <div class="sidebar">
+        <h3>منو</h3>
+        <nav>
+            <ul>
+                <li><a href="{{ route('dashboard') }}">داشبورد</a></li>
+                <li><a href="{{ route('invoices.index') }}">لیست فاکتورها</a></li>
+                <li><a href="{{ route('products.index') }}">محصولات</a></li>
+                <li><a href="{{ route('persons.customers') }}">مشتریان</a></li>
+            </ul>
+        </nav>
     </div>
-    <div class="card mb-4 p-4">
-        <div class="row mb-2">
-            <div class="col-md-4"><b>مشتری:</b> {{ $invoice->customer->name ?? '-' }}</div>
-            <div class="col-md-4"><b>تاریخ:</b> {{ jdate($invoice->date)->format('Y/m/d') }}</div>
-            <div class="col-md-4"><b>وضعیت:</b>
-                @if($invoice->status == 'paid')
-                    <span class="badge badge-success">پرداخت‌شده</span>
-                @else
-                    <span class="badge badge-warning">پیش‌نویس</span>
-                @endif
+    <div class="main-content">
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>جزئیات فاکتور شماره {{ $invoice->invoice_number }}</h3>
+                <a href="{{ route('invoices.print', $invoice->id) }}" target="_blank" class="btn btn-secondary">چاپ فاکتور</a>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <p><strong>مشتری:</strong>
+                        @if($invoice->customer)
+                            {{ $invoice->customer->company_name ?: ($invoice->customer->first_name . ' ' . $invoice->customer->last_name) }}
+                        @else
+                            -
+                        @endif
+                    </p>
+                    <p><strong>تاریخ صدور:</strong> {{ jdate($invoice->date)->format('Y/m/d') }}</p>
+                    <p><strong>تاریخ سررسید:</strong> {{ jdate($invoice->due_date)->format('Y/m/d') }}</p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>واحد پول:</strong>
+                        @if($invoice->currency)
+                            {{ $invoice->currency->title }} {{ $invoice->currency->symbol ? '(' . $invoice->currency->symbol . ')' : '' }}
+                        @else
+                            -
+                        @endif
+                    </p>
+                    <p><strong>فروشنده:</strong>
+                        @if($invoice->seller)
+                            {{ $invoice->seller->company_name ?: ($invoice->seller->first_name . ' ' . $invoice->seller->last_name) }}
+                        @else
+                            -
+                        @endif
+                    </p>
+                    <p><strong>ارجاع:</strong> {{ $invoice->reference ?? '-' }}</p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>شماره فاکتور:</strong> {{ $invoice->invoice_number }}</p>
+                    <p><strong>وضعیت:</strong>
+                        @if($invoice->status == 'paid')
+                            <span class="badge bg-success">پرداخت شده</span>
+                        @else
+                            <span class="badge bg-warning text-dark">در انتظار پرداخت</span>
+                        @endif
+                    </p>
+                </div>
+            </div>
+
+            <div class="table-responsive my-4">
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>نام محصول</th>
+                            <th>کد کالا</th>
+                            <th>تعداد</th>
+                            <th>قیمت واحد (ریال)</th>
+                            <th>مجموع (ریال)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($invoice->items as $item)
+                            <tr>
+                                <td>{{ $item->product->name ?? '-' }}</td>
+                                <td>{{ $item->product->code ?? '-' }}</td>
+                                <td>{{ $item->quantity }}</td>
+                                <td>{{ number_format($item->unit_price) }}</td>
+                                <td>{{ number_format($item->total_price) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <p><strong>تخفیف:</strong> {{ number_format($invoice->discount) }} ریال</p>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>مالیات:</strong> {{ $invoice->tax }}%</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <h5>جمع کل: <span class="fw-bold">{{ number_format($invoice->total_amount) }} ریال</span></h5>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ route('invoices.index') }}" class="btn btn-link">بازگشت به لیست فاکتورها</a>
+                <a href="{{ route('invoices.edit', $invoice->id) }}" class="btn btn-warning">ویرایش فاکتور</a>
             </div>
         </div>
-        <div class="row mb-2">
-            <div class="col-md-4"><b>فروشنده:</b> {{ $invoice->seller->name ?? '-' }}</div>
-            <div class="col-md-4"><b>سررسید:</b> {{ jdate($invoice->due_date)->format('Y/m/d') }}</div>
-            <div class="col-md-4"><b>واحد پول:</b> {{ $invoice->currency->title ?? '-' }}</div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-md-12"><b>ارجاع:</b> {{ $invoice->reference ?? '-' }}</div>
-        </div>
-    </div>
-    <table class="table table-bordered text-center">
-        <thead>
-        <tr>
-            <th>کالا</th>
-            <th>تعداد</th>
-            <th>قیمت واحد</th>
-            <th>مجموع</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach($invoice->items as $item)
-            <tr>
-                <td>{{ $item->product->name ?? '-' }}</td>
-                <td>{{ $item->qty }}</td>
-                <td>{{ number_format($item->price) }}</td>
-                <td>{{ number_format($item->total) }}</td>
-            </tr>
-        @endforeach
-        </tbody>
-    </table>
-    <div class="row mt-4">
-        <div class="col-md-6"></div>
-        <div class="col-md-6">
-            <ul class="list-group">
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>جمع کل:</span>
-                    <span>{{ number_format($invoice->total_amount) }} ریال</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>تخفیف:</span>
-                    <span>{{ number_format($invoice->discount_amount + ($invoice->total_amount * $invoice->discount_percent / 100)) }} ریال</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>مالیات:</span>
-                    <span>{{ number_format(($invoice->total_amount - ($invoice->discount_amount + ($invoice->total_amount * $invoice->discount_percent / 100))) * $invoice->tax_percent / 100 ) }} ریال</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <strong>مبلغ نهایی:</strong>
-                    <strong>{{ number_format($invoice->final_amount) }} ریال</strong>
-                </li>
-            </ul>
-        </div>
-    </div>
-    <div class="mt-4">
-        <a href="{{ route('invoices.print', $invoice->id) }}" target="_blank" class="btn btn-secondary">چاپ فاکتور</a>
-        @if($invoice->status != 'paid')
-            <form action="{{ route('invoices.pay', $invoice->id) }}" method="POST" style="display:inline-block;">
-                @csrf
-                <button type="submit" class="btn btn-success">تایید پرداخت</button>
-            </form>
-        @endif
     </div>
 </div>
 @endsection

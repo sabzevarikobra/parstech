@@ -112,4 +112,11 @@ public function personSearch(Request $request)
         $category->delete();
         return redirect()->route('categories.index')->with('success', 'دسته‌بندی با موفقیت حذف شد.');
     }
+
+public function apiList()
+{
+    return response()->json(
+        \App\Models\Category::orderBy('name')->get(['id', 'name', 'parent_id', 'category_type', 'code'])
+    );
+}
 }

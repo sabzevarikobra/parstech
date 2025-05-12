@@ -6,7 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\BrandController;
-use App\Http\Controllers\CategoryController;
+
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\InvoiceController;
@@ -22,6 +22,7 @@ use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\UnitController;
 
+use App\Http\Controllers\CategoryController;
 // Landing page
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 
@@ -164,5 +165,6 @@ Route::get('/api/products/search', [App\Http\Controllers\ProductController::clas
 Route::get('/invoices/{id}/pdf', [\App\Http\Controllers\InvoiceController::class, 'pdf'])->name('invoices.pdf');
 
 Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
-
+Route::get('categories/list', [CategoryController::class, 'list']);
+Route::get('categories/list', [CategoryController::class, 'apiList']);
 require __DIR__.'/auth.php';

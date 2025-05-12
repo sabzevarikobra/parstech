@@ -51,6 +51,37 @@ class InvoiceController extends Controller
             'customer_id.required' => 'مشتری را انتخاب کنید.'
         ]);
 
+
+        // اعتبارسنجی داده‌ها
+    $validated = $request->validate([
+        'invoice_number' => 'required|numeric|unique:invoices,invoice_number',
+        'date'           => 'required|date',
+        'due_date'       => 'required|date',
+        'customer_id'    => 'required|exists:people,id',
+        'currency_id'    => 'required|exists:currencies,id',
+        'seller_id'      => 'required|exists:users,id',
+        // سایر فیلدهای مورد نیاز...
+    ]);
+
+    // ساخت فاکتور
+    $invoice = Invoice::create($validated);
+
+    // ذخیره آیتم‌های فاکتور (در صورت ارسال)
+    if ($request->has('items')) {
+        foreach ($request->items as $item) {
+            $invoice->items()->create([
+                'product_id' => $item['product_id'],
+                'qty'        => $item['qty'],
+                'price'      => $item['price'],
+                'total'      => $item['total'],
+            ]);
+        }
+    }
+
+    return redirect()->route('invoices.index')->with('success', 'فاکتور با موفقیت ثبت شد.');
+
+
+    
         DB::beginTransaction();
         try {
             // محاسبه مبلغ‌ها

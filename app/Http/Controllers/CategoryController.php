@@ -115,8 +115,7 @@ public function personSearch(Request $request)
 
 public function apiList()
 {
-    return response()->json(
-        \App\Models\Category::orderBy('name')->get(['id', 'name', 'parent_id', 'category_type', 'code'])
-    );
+    $categories = \App\Models\Category::orderBy('name')->get(['id', 'name', 'code', 'category_type', 'parent_id']);
+    return response()->json($categories);
 }
 }

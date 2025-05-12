@@ -81,7 +81,7 @@ class InvoiceController extends Controller
     return redirect()->route('invoices.index')->with('success', 'فاکتور با موفقیت ثبت شد.');
 
 
-    
+
         DB::beginTransaction();
         try {
             // محاسبه مبلغ‌ها
@@ -154,4 +154,9 @@ class InvoiceController extends Controller
         $invoice = Invoice::with(['items.product', 'customer'])->findOrFail($id);
         return view('invoices.show', compact('invoice'));
     }
+    public function index()
+{
+    $invoices = \App\Models\Invoice::with(['customer'])->orderBy('id', 'desc')->paginate(15);
+    return view('invoices.index', compact('invoices'));
+}
 }

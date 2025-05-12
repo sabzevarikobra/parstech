@@ -10,10 +10,31 @@ use Illuminate\Support\Facades\DB;
 class InvoiceController extends Controller
 {
     public function create()
-    {
-        $currencies = \App\Models\Currency::orderBy('title')->get();
-        return view('invoices.create', compact('currencies'));
+{
+    $currencies = Currency::orderBy('title')->get();
+
+    // توجه: اگر مدل مشتری شما Customer است، این را اصلاح کن
+    // اگر Person است، همین را نگه دار؛ اگر Customer است خط زیر را تغییر بده:
+    // $customers = Customer::orderBy('name')->get();
+
+    $customers = Person::orderBy('first_name')->orderBy('last_name')->get();
+
+    // اگر برای فروشنده یا محصولات هم نیاز داری اینجا لود کن
+    // $sellers = ... ; $products = ...;
+
+    // شماره بعدی فاکتور (همان کد قبلی)
+    $last = Invoice::where('invoice_number', 'LIKE', 'invoices-%')
+        ->orderByRaw("CAST(SUBSTRING(invoice_number, 10) AS UNSIGNED) DESC")
+        ->first();
+    if ($last) {
+        $lastNum = intval(substr($last->invoice_number, 9));
+        $nextInvoiceNumber = "invoices-" . ($lastNum + 1);
+    } else {
+        $nextInvoiceNumber = "invoices-10001";
     }
+
+    return view('invoices.create', compact('currencies', 'customers', 'nextInvoiceNumber'));
+}
 
     public function getNextNumber()
     {
@@ -154,5 +175,5 @@ class InvoiceController extends Controller
         $invoice = Invoice::with(['items.product', 'customer'])->findOrFail($id);
         return view('invoices.show', compact('invoice'));
     }
-    
+
 }

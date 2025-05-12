@@ -49,7 +49,7 @@
             <div class="invoice-header">
                 <h2 class="mb-4">صدور فاکتور جدید</h2>
 
-                <form method="POST" action="{{ route('invoices.store') }}" id="invoiceForm" autocomplete="off">
+                <form action="{{ route('invoices.store') }}" method="POST">
                     @csrf
 
                     <div class="row">

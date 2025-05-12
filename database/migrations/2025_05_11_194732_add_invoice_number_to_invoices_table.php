@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            $table->string('number')->unique()->after('id');
+            $table->string('invoice_number')->nullable()->after('id');
         });
     }
 
     public function down(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            $table->dropColumn('number');
+            $table->dropColumn('invoice_number');
         });
     }
 };

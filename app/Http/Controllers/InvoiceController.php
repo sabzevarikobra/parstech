@@ -1,144 +1,126 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Product;
-use App\Models\Person;
-use App\Models\Currency;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller
 {
-    // نمایش لیست فاکتورها
-    public function index()
-    {
-        $invoices = Invoice::with('customer', 'seller', 'currency')->orderByDesc('created_at')->paginate(20);
-        return view('invoices.index', compact('invoices'));
-    }
-
-    // فرم صدور فاکتور جدید
     public function create()
     {
-        $currencies = Currency::all();
-        $nextInvoiceNumber = Invoice::max('invoice_number') + 1 ?? 1001;
-        return view('invoices.create', compact('currencies', 'nextInvoiceNumber'));
+        $currencies = \App\Models\Currency::orderBy('title')->get();
+        return view('invoices.create', compact('currencies'));
     }
 
-    // ذخیره‌سازی فاکتور جدید و کم کردن موجودی انبار
+    public function getNextNumber()
+    {
+        $last = Invoice::where('number', 'LIKE', 'invoices-%')
+            ->whereRaw("number REGEXP '^invoices-[0-9]+$'")
+            ->orderByRaw("CAST(SUBSTRING(number, 10) AS UNSIGNED) DESC")
+            ->first();
+
+        if ($last) {
+            $lastNum = intval(substr($last->number, 9));
+            $next = $lastNum + 1;
+        } else {
+            $next = 10001;
+        }
+        return response()->json(['number' => "invoices-$next"]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
-            'invoiceNumber'   => 'required|unique:invoices,invoice_number',
-            'date'            => 'required|date',
-            'dueDate'         => 'required|date',
-            'customer_id'     => 'required|exists:persons,id',
-            'currency_id'     => 'required|exists:currencies,id',
-            'seller'          => 'required|exists:users,id',
-            'products'        => 'required|array|min:1',
-            'products.*.id'   => 'required|exists:products,id',
-            'products.*.qty'  => 'required|integer|min:1',
-            'products.*.price'=> 'required|numeric|min:0',
-            'discount_amount' => 'nullable|numeric|min:0',
-            'discount_percent'=> 'nullable|numeric|min:0|max:100',
-            'tax_percent'     => 'nullable|numeric|min:0|max:100'
+            'invoiceNumber' => 'required|string|unique:invoices,number',
+            'date' => 'required|string',
+            'dueDate' => 'required|string',
+            'customer_id' => 'required|integer|exists:persons,id',
+            'seller'      => 'nullable|integer|exists:sellers,id',
+            'currency_id' => 'required|integer|exists:currencies,id',
+            'discount_percent' => 'nullable|numeric|min:0|max:100',
+            'discount_amount'  => 'nullable|numeric|min:0',
+            'tax_percent'      => 'nullable|numeric|min:0|max:100',
+            'products'   => 'required|array|min:1',
+            'products.*.qty' => 'required|numeric|min:1',
+            'products.*.price' => 'required|numeric|min:0',
         ], [
-            'products.required' => 'حداقل یک محصول باید انتخاب شود.'
+            'products.required' => 'حداقل یک محصول باید انتخاب شود.',
+            'customer_id.required' => 'مشتری را انتخاب کنید.'
         ]);
 
         DB::beginTransaction();
         try {
-            // بررسی موجودی محصولات
-            foreach ($request->products as $item) {
-                $product = Product::find($item['id']);
-                if ($product->inventory < $item['qty']) {
-                    return back()->withInput()->withErrors([
-                        'products' => "موجودی محصول «{$product->name}» کافی نیست. موجودی فعلی: {$product->inventory}"
-                    ]);
+            // محاسبه مبلغ‌ها
+            $items = [];
+            $total = 0;
+            foreach ($request->products as $id => $row) {
+                $qty = floatval($row['qty']);
+                $price = floatval($row['price']);
+                $total += $price * $qty;
+                $items[] = [
+                    'product_id' => $id,
+                    'price' => $price,
+                    'qty'   => $qty,
+                ];
+            }
+
+            $discount_amount = $request->discount_amount ? floatval($request->discount_amount) : 0;
+            $discount_percent = $request->discount_percent ? floatval($request->discount_percent) : 0;
+            if ($discount_amount <= 0 && $discount_percent > 0) {
+                $discount_amount = ($total * $discount_percent) / 100;
+            }
+            $after_discount = $total - $discount_amount;
+            $tax_percent = $request->tax_percent ? floatval($request->tax_percent) : 0;
+            $tax_amount = ($after_discount * $tax_percent) / 100;
+            $final_amount = $after_discount + $tax_amount;
+
+            $invoice = Invoice::create([
+                'number' => $request->invoiceNumber,
+                'date' => $request->date,
+                'due_date' => $request->dueDate,
+                'customer_id' => $request->customer_id,
+                'seller_id'   => $request->seller,
+                'currency_id' => $request->currency_id,
+                'discount_percent' => $discount_percent,
+                'discount_amount'  => $discount_amount,
+                'tax_percent'      => $tax_percent,
+                'tax_amount'       => $tax_amount,
+                'total' => $total,
+                'final_amount' => $final_amount,
+            ]);
+
+            // ذخیره ردیف‌های فاکتور و کم کردن موجودی انبار
+            foreach ($items as $item) {
+                InvoiceItem::create([
+                    'invoice_id' => $invoice->id,
+                    'product_id' => $item['product_id'],
+                    'price'      => $item['price'],
+                    'qty'        => $item['qty'],
+                ]);
+                // کم کردن موجودی انبار
+                $product = Product::find($item['product_id']);
+                if ($product) {
+                    $product->stock = max(0, $product->stock - $item['qty']);
+                    $product->save();
                 }
             }
 
-            // ایجاد فاکتور
-            $invoice = Invoice::create([
-                'invoice_number'  => $request->invoiceNumber,
-                'date'            => $request->date,
-                'due_date'        => $request->dueDate,
-                'customer_id'     => $request->customer_id,
-                'currency_id'     => $request->currency_id,
-                'seller_id'       => $request->seller,
-                'reference'       => $request->reference,
-                'discount_amount' => $request->discount_amount ?: 0,
-                'discount_percent'=> $request->discount_percent ?: 0,
-                'tax_percent'     => $request->tax_percent ?: 0,
-                'status'          => 'draft', // وضعیت اولیه: پیش‌نویس
-                'total_amount'    => 0, // بعداً محاسبه می‌شود
-                'final_amount'    => 0, // بعداً محاسبه می‌شود
-            ]);
-
-            $total = 0;
-            foreach ($request->products as $item) {
-                $product = Product::find($item['id']);
-                // کم کردن موجودی محصول
-                $product->inventory -= $item['qty'];
-                $product->save();
-
-                // درج آیتم فاکتور
-                InvoiceItem::create([
-                    'invoice_id' => $invoice->id,
-                    'product_id' => $product->id,
-                    'qty'        => $item['qty'],
-                    'price'      => $item['price'],
-                    'total'      => $item['qty'] * $item['price'],
-                ]);
-                $total += $item['qty'] * $item['price'];
-            }
-
-            // محاسبه مالیات و تخفیف و مبلغ نهایی
-            $discount = $request->discount_amount ?: 0;
-            if ($request->discount_percent) {
-                $discount += ($total * $request->discount_percent) / 100;
-            }
-            $tax = $request->tax_percent ? ($total - $discount) * $request->tax_percent / 100 : 0;
-            $final = $total - $discount + $tax;
-
-            // به روزرسانی مبلغ فاکتور
-            $invoice->update([
-                'total_amount' => $total,
-                'final_amount' => $final
-            ]);
-
             DB::commit();
-
-            return redirect()->route('invoices.index')->with('success', 'فاکتور با موفقیت ثبت شد و موجودی انبار به‌روزرسانی شد.');
-        } catch (\Exception $e) {
+            // ریدایرکت به صفحه نمایش فاکتور
+            return redirect()->route('invoices.show', $invoice->id)->with('success', 'فاکتور با موفقیت ثبت شد.');
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->withInput()->withErrors(['general' => 'خطا در ثبت فاکتور: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'خطا در ثبت فاکتور، لطفا دوباره تلاش کنید. ' . $e->getMessage()]);
         }
     }
 
-    // نمایش جزئیات فاکتور
+    // اگر متد show نداری حتما اضافه کن تا فاکتور نمایش داده شود
     public function show($id)
     {
-        $invoice = Invoice::with('items.product', 'customer', 'seller', 'currency')->findOrFail($id);
+        $invoice = Invoice::with(['items.product', 'customer'])->findOrFail($id);
         return view('invoices.show', compact('invoice'));
-    }
-
-    // چاپ فاکتور (PDF یا صفحه چاپ)
-    public function print($id)
-    {
-        $invoice = Invoice::with('items.product', 'customer', 'seller', 'currency')->findOrFail($id);
-        // برای نمایش صفحه چاپ یا تولید PDF
-        return view('invoices.print', compact('invoice'));
-    }
-
-    // تغییر وضعیت فاکتور به پرداخت‌شده
-    public function pay($id)
-    {
-        $invoice = Invoice::findOrFail($id);
-        $invoice->update(['status' => 'paid']);
-        return back()->with('success', 'وضعیت فاکتور به پرداخت‌شده تغییر یافت.');
     }
 }

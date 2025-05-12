@@ -204,7 +204,7 @@ $(document).ready(function () {
                 <td>${category}</td>
                 <td>${toFaNum(stock, 0)}</td>
                 <td>
-                    <input type="number" name="products[${id}][price]" class="form-control input-sm product-price" value="${price}" min="0" readonly>
+                    <input type="number" name="products[${id}][price]" class="form-control input-sm product-price" value="${price}" min="0" >
                 </td>
                 <td>
                     <input type="number" name="products[${id}][qty]" class="form-control input-sm product-qty" value="1" min="1" max="${stock}">

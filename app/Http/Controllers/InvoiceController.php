@@ -6,7 +6,7 @@ use App\Models\InvoiceItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Morilog\Jalali\Jalalian;
 class InvoiceController extends Controller
 {
     // لیست فاکتورها
@@ -59,22 +59,24 @@ class InvoiceController extends Controller
             'customer_id.required' => 'مشتری را انتخاب کنید.'
         ]);
 
+        $invoiceDate = Jalalian::fromFormat('Y/m/d', $request->date)->toCarbon();
+        $dueDate = Jalalian::fromFormat('Y/m/d', $request->dueDate)->toCarbon();
+
         DB::beginTransaction();
         try {
             // محاسبه مبلغ‌ها
             $items = [];
             $total = 0;
             foreach ($request->products as $id => $row) {
-                $qty = floatval($row['qty']);
-                $price = floatval($row['price']);
-                $total += $price * $qty;
-                $items[] = [
-                    'product_id' => $id,
-                    'price' => $price,
-                    'qty'   => $qty,
-                ];
-            }
-
+            InvoiceItem::create([
+                'invoice_id' => $invoice->id,
+                'product_id' => $id,
+                'qty'        => $row['qty'],
+                'price'      => $row['price'],
+                'total'      => $row['qty'] * $row['price'],
+            ]);
+        }
+        return redirect()->route('invoices.index')->with('success', 'فاکتور با موفقیت ثبت شد.');
             $discount_amount = $request->discount_amount ? floatval($request->discount_amount) : 0;
             $discount_percent = $request->discount_percent ? floatval($request->discount_percent) : 0;
             if ($discount_amount <= 0 && $discount_percent > 0) {
@@ -86,9 +88,10 @@ class InvoiceController extends Controller
             $final_amount = $after_discount + $tax_amount;
 
             $invoice = Invoice::create([
+                'invoice_date' => $invoiceDate,
                 'number' => $request->invoiceNumber,
                 'date' => $request->date,
-                'due_date' => $request->dueDate,
+                'due_date' => $dueDate,
                 'customer_id' => $request->customer_id,
                 'seller_id'   => $request->seller,
                 'currency_id' => $request->currency_id,

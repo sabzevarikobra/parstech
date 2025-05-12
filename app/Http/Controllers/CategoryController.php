@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+
+    public function list()
+    {
+        $cats = Category::select('id', 'name')->get();
+        return response()->json($cats);
+    }
     // لیست دسته‌بندی‌ها با زیرمجموعه‌ها (لیستی)
     public function index()
     {
@@ -52,6 +58,9 @@ public function personSearch(Request $request)
             'description' => 'nullable|string|max:1000',
             'image' => 'nullable|image|max:2048'
         ]);
+
+        $date = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $request->date)->toCarbon();
+        $dueDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $request->dueDate)->toCarbon();
 
         $data = $request->only(['name', 'code', 'category_type', 'parent_id', 'description']);
         if (empty($data['code'])) {

@@ -9,6 +9,13 @@ use Illuminate\Support\Facades\DB;
 
 class InvoiceController extends Controller
 {
+    // لیست فاکتورها
+    public function index()
+    {
+        $invoices = Invoice::with(['customer'])->orderBy('id', 'desc')->paginate(15);
+        return view('invoices.index', compact('invoices'));
+    }
+
     public function create()
     {
         $currencies = \App\Models\Currency::orderBy('title')->get();
@@ -31,6 +38,7 @@ class InvoiceController extends Controller
         return response()->json(['number' => "invoices-$next"]);
     }
 
+    // ذخیره فاکتور جدید
     public function store(Request $request)
     {
         $request->validate([
@@ -50,37 +58,6 @@ class InvoiceController extends Controller
             'products.required' => 'حداقل یک محصول باید انتخاب شود.',
             'customer_id.required' => 'مشتری را انتخاب کنید.'
         ]);
-
-
-        // اعتبارسنجی داده‌ها
-    $validated = $request->validate([
-        'invoice_number' => 'required|numeric|unique:invoices,invoice_number',
-        'date'           => 'required|date',
-        'due_date'       => 'required|date',
-        'customer_id'    => 'required|exists:people,id',
-        'currency_id'    => 'required|exists:currencies,id',
-        'seller_id'      => 'required|exists:users,id',
-        // سایر فیلدهای مورد نیاز...
-    ]);
-
-    // ساخت فاکتور
-    $invoice = Invoice::create($validated);
-
-    // ذخیره آیتم‌های فاکتور (در صورت ارسال)
-    if ($request->has('items')) {
-        foreach ($request->items as $item) {
-            $invoice->items()->create([
-                'product_id' => $item['product_id'],
-                'qty'        => $item['qty'],
-                'price'      => $item['price'],
-                'total'      => $item['total'],
-            ]);
-        }
-    }
-
-    return redirect()->route('invoices.index')->with('success', 'فاکتور با موفقیت ثبت شد.');
-
-
 
         DB::beginTransaction();
         try {
@@ -123,7 +100,7 @@ class InvoiceController extends Controller
                 'final_amount' => $final_amount,
             ]);
 
-            // ذخیره ردیف‌های فاکتور و کم کردن موجودی انبار
+            // ذخیره آیتم‌های فاکتور و کم کردن موجودی انبار
             foreach ($items as $item) {
                 InvoiceItem::create([
                     'invoice_id' => $invoice->id,
@@ -140,23 +117,16 @@ class InvoiceController extends Controller
             }
 
             DB::commit();
-            // ریدایرکت به صفحه نمایش فاکتور
-            return redirect()->route('invoices.show', $invoice->id)->with('success', 'فاکتور با موفقیت ثبت شد.');
+            return redirect()->route('invoices.index')->with('success', 'فاکتور با موفقیت ثبت شد.');
         } catch (\Throwable $e) {
             DB::rollBack();
             return back()->withErrors(['error' => 'خطا در ثبت فاکتور، لطفا دوباره تلاش کنید. ' . $e->getMessage()]);
         }
     }
 
-    // اگر متد show نداری حتما اضافه کن تا فاکتور نمایش داده شود
     public function show($id)
     {
         $invoice = Invoice::with(['items.product', 'customer'])->findOrFail($id);
         return view('invoices.show', compact('invoice'));
     }
-    public function index()
-{
-    $invoices = \App\Models\Invoice::with(['customer'])->orderBy('id', 'desc')->paginate(15);
-    return view('invoices.index', compact('invoices'));
-}
 }

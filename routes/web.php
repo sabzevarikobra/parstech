@@ -168,9 +168,16 @@ Route::delete('/currencies/{currency}', [CurrencyController::class, 'destroy'])-
 
 
 Route::get('/sales/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+Route::get('/sales/newform', [InvoiceController::class, 'newForm'])->name('sales.newform');
 
 
-
+Route::get('/sales/newform', function () {
+    return view('sales.create', [
+        'sellers' => \App\Models\Seller::all(),
+        'currencies' => \App\Models\Currency::all(),
+        // هر دیتا دیگری که فرم لازم دارد هم اضافه کن!
+    ]);
+})->name('sales.newform');
 
 
 

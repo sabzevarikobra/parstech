@@ -37,17 +37,12 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('invoices.create') }}" class="nav-link {{ request()->routeIs('invoices.create') ? 'active' : '' }}">
+                            <a href="{{ route('sales.newform') }}" class="nav-link {{ request()->routeIs('sales.newform') ? 'active' : '' }}">
                                 <i class="fas fa-file-invoice nav-icon"></i>
                                 <p>فروش جدید</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="{{ route('invoices.create') }}" class="nav-link {{ request()->routeIs('invoices.create') ? 'active' : '' }}">
-                                <i class="fas fa-file-invoice nav-icon"></i>
-                                <p>فروش جدید</p>
-                            </a>
-                        </li>
+
                         <li class="nav-item">
                             <a href="{{ route('sales.index') }}" class="nav-link {{ request()->routeIs('sales.index') ? 'active' : '' }}">
                                 <i class="fas fa-list nav-icon"></i>

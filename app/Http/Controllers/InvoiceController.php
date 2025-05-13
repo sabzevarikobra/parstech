@@ -13,11 +13,13 @@ use Morilog\Jalali\Jalalian;
 
 class InvoiceController extends Controller
 {
-    public function create()
-    {
-        $currencies = Currency::all();
-        return view('invoices.create', compact('currencies'));
-    }
+    public function newForm()
+{
+    $sellers = Seller::all();
+    $currencies = Currency::all();
+    // داده‌های دیگر...
+    return view('sales.create', compact('sellers', 'currencies'));
+}
 
 
     public function getNextNumber()

@@ -164,6 +164,7 @@ Route::delete('/currencies/{currency}', [CurrencyController::class, 'destroy'])-
 
 
 
+Route::get('/sales/invoices/create', [InvoiceController::class, 'create'])->name('sales.invoices.create');
 
 
 

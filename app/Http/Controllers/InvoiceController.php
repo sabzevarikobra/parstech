@@ -15,9 +15,8 @@ class InvoiceController extends Controller
 {
     public function create()
     {
-        $currencies = Currency::all();
-        return view('invoices.create', compact('currencies'));
-    }
+        return view('sales.create');
+        }
 
 
     public function getNextNumber()

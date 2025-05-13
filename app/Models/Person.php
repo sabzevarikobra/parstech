@@ -43,4 +43,9 @@ class Person extends Model
         }
         return (11 - $ret) == $parity;
     }
+    
+    public function invoices()
+    {
+        return $this->hasMany(\App\Models\Invoice::class, 'customer_id');
+    }
 }

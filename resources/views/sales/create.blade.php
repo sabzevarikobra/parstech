@@ -24,7 +24,7 @@
                        class="form-control sales-form-input"
                        id="invoice_number"
                        name="invoice_number"
-                       value="{{ old('invoice_number', $invoiceNumber ?? '') }}"
+                       value="{{ old('invoice_number', $nextNumber ?? '') }}"
                        readonly
                 >
                 <button class="btn btn-light border" type="button" id="edit-invoice-number-btn"
@@ -33,26 +33,17 @@
                 </button>
             </div>
             <div class="form-text text-muted mt-1">
-                مثال: invoices-10001
+                مثال: 10001
             </div>
         </div>
     </div>
     <!-- نام مشتری -->
     <div class="col-12 col-md-4">
-        <div class="sales-form-section">
-            <label class="sales-form-label mb-2" for="customer_search">نام مشتری</label>
-            <div class="position-relative">
-                <input type="text"
-                       class="form-control sales-form-input"
-                       id="customer_search"
-                       name="customer_search"
-                       placeholder="جستجوی مشتری..."
-                       autocomplete="off"
-                >
-                <div class="dropdown-menu w-100 shadow-sm" id="customer-search-results"></div>
-            </div>
-            <input type="hidden" name="customer_id" id="customer_id">
-        </div>
+        <label for="customer_search" class="form-label">مشتری</label>
+        <input type="text" class="form-control" id="customer_search" placeholder="جستجوی مشتری...">
+        <input type="hidden" name="customer_id" id="customer_id">
+        <div class="dropdown-menu" id="customer-search-results" style="width:100%"></div>
+        <div class="form-text text-muted mt-1">نام مشتری را تایپ کنید و انتخاب نمایید.</div>
     </div>
     <!-- فروشنده -->
     <div class="col-12 col-md-4">
@@ -121,4 +112,6 @@
 @section('scripts')
 <script src="{{ asset('js/sales-invoice-init.js') }}"></script>
 <script src="{{ asset('js/sales-products.js') }}"></script>
+
+
 @endsection

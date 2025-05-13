@@ -25,7 +25,8 @@ use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\ShareholderController;
-
+use App\Models\Person;
+use Illuminate\Http\Request;
 
 Route::get('/sales/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
 
@@ -179,7 +180,15 @@ Route::get('/sales/newform', function () {
     ]);
 })->name('sales.newform');
 
-
+Route::get('/customers/search', function(Request $request) {
+    $q = $request->get('q');
+    $results = Person::query()
+        ->where('name', 'LIKE', "%$q%")
+        ->orWhere('company_name', 'LIKE', "%$q%")
+        ->limit(10)
+        ->get(['id', 'name']);
+    return response()->json($results);
+});
 
 
 

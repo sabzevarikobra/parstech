@@ -79,3 +79,11 @@ document.addEventListener('DOMContentLoaded', function () {
         loadItems(true);
     });
 });
+document.addEventListener('DOMContentLoaded', function () {
+    let invoiceInput = document.getElementById('invoice_number');
+    if (invoiceInput && !invoiceInput.value) {
+        fetch('/api/invoices/next-number')
+            .then(res => res.json())
+            .then(data => { invoiceInput.value = data.number; });
+    }
+});

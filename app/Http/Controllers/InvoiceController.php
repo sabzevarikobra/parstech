@@ -13,13 +13,17 @@ use Morilog\Jalali\Jalalian;
 
 class InvoiceController extends Controller
 {
+
     public function newForm()
-{
-    $sellers = Seller::all();
-    $currencies = Currency::all();
-    // داده‌های دیگر...
-    return view('sales.create', compact('sellers', 'currencies'));
-}
+    {
+        $sellers = Seller::all();
+        $currencies = Currency::all();
+        // فرض: Invoice شماره قبلی را دارد
+        $lastInvoice = Invoice::orderByDesc('id')->first();
+        $nextNumber = $lastInvoice ? $lastInvoice->invoice_number + 1 : 10001;
+        // اگر فرمت شماره متفاوت است، الگوریتم را اینجا تنظیم کن
+        return view('sales.create', compact('sellers', 'currencies', 'nextNumber'));
+    }
 
 
     public function getNextNumber()
@@ -43,9 +47,10 @@ class InvoiceController extends Controller
         // اعتبارسنجی اطلاعات پایه
         $request->validate([
             // فیلدهای دیگر...
-            'invoice_items' => 'required|string',
+            'customer_id' => 'required|exists:persons,id',
+            'invoice_items' => 'required|string'
         ]);
-    
+
         $items = json_decode($request->invoice_items, true);
 
         // اعتبارسنجی آیتم‌ها (تعداد >0 و ...)
@@ -56,6 +61,7 @@ class InvoiceController extends Controller
         // ایجاد رکورد فاکتور
         $invoice = Invoice::create([
             // فیلدهای دیگر...
+            'customer_id' => $request->customer_id,
         ]);
 
         // ذخیره اقلام فاکتور

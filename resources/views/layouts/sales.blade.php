@@ -10,7 +10,7 @@
     @yield('styles')
 </head>
 <body class="sales-layout-bg">
-
+    @include('layouts.sidebar')
     <div class="container sales-invoice-container my-5 shadow-lg rounded-4 p-4 bg-white">
         <!-- Header -->
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between mb-4 pb-2 border-bottom">

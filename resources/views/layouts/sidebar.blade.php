@@ -37,9 +37,9 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('quick-sale') }}" class="nav-link {{ request()->routeIs('quick-sale') ? 'active' : '' }}">
-                                <i class="fas fa-bolt nav-icon"></i>
-                                <p>فروش سریع</p>
+                            <a href="{{ route('invoices.create') }}" class="nav-link {{ request()->routeIs('invoices.create') ? 'active' : '' }}">
+                                <i class="fas fa-file-invoice nav-icon"></i>
+                                <p>فروش جدید</p>
                             </a>
                         </li>
                         <li class="nav-item">

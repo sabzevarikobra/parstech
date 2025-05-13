@@ -66,3 +66,40 @@
         padding: 1rem 0.5rem;
     }
 }
+/* ادامه استایل‌های قبلی ... */
+
+.sales-product-tabs .nav-link {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.7rem 2.2rem;
+    border-radius: 1.2rem 1.2rem 0 0;
+    color: #3b3b3b;
+}
+
+.sales-product-tabs .nav-link.active {
+    background: #0d6efd;
+    color: #fff;
+}
+
+.sales-product-table th, .sales-product-table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.sales-product-table img {
+    border: 1px solid #e4eaf3;
+    background: #f5faff;
+    object-fit: cover;
+}
+.sales-invoice-items-table th, .sales-invoice-items-table td {
+    vertical-align: middle;
+    text-align: center;
+}
+.sales-invoice-items-table img {
+    border: 1px solid #e4eaf3;
+    background: #f5faff;
+    object-fit: cover;
+}
+.sales-invoice-items-table tfoot {
+    font-size: 1.1rem;
+}

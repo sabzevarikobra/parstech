@@ -26,6 +26,9 @@ use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\ShareholderController;
 
+
+Route::get('/sales/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+
 // Landing page
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 
@@ -164,7 +167,7 @@ Route::delete('/currencies/{currency}', [CurrencyController::class, 'destroy'])-
 
 
 
-Route::get('/sales/invoices/create', [InvoiceController::class, 'create'])->name('sales.invoices.create');
+Route::get('/sales/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
 
 
 

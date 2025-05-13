@@ -190,8 +190,18 @@ Route::get('/customers/search', function(Request $request) {
     return response()->json($results);
 });
 
+Route::get('/api/customers/search', function(Request $request) {
+    $q = $request->get('q');
+    $results = Person::query()
+        ->where('title', 'LIKE', "%$q%")
+        ->orWhere('company_name', 'LIKE', "%$q%")
+        ->limit(10)
+        ->get(['id', 'title as name']);
+    return response()->json($results);
+})->middleware(['web', 'auth']); // یا فقط 'web' اگر احراز هویت نمی‌خواهی
 
-
+Route::resource('persons', \App\Http\Controllers\PersonController::class);
+Route::get('persons/next-code', [PersonController::class, 'nextCode'])->name('persons.next-code');
 
 
 

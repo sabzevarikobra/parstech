@@ -585,5 +585,12 @@ $(document).ready(function() {
         }
     });
 });
+document.getElementById('generate-code-btn').addEventListener('click', function() {
+    fetch("{{ route('persons.next-code') }}")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('accounting_code').value = data.code;
+        });
+});
 </script>
 @endpush

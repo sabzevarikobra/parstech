@@ -7,8 +7,24 @@ use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use App\Models\Province;
+
+
+
+
+
+
+
+
 class PersonController extends Controller
 {
+
+    public function nextCode()
+    {
+        // فرض می‌کنیم کد حسابداری عددی و یکتا است
+        $maxCode = Person::max(DB::raw('CAST(accounting_code AS UNSIGNED)'));
+        $nextCode = $maxCode ? $maxCode + 1 : 1001; // اگر کدی وجود ندارد، از 1001 شروع کن
+        return response()->json(['code' => $nextCode]);
+    }
     public function index()
     {
         $persons = Person::latest()->paginate(10);

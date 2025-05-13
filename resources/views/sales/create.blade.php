@@ -1,7 +1,15 @@
-@extends('layouts.sales')
+@extends('layouts.app')
 
 @section('content')
 <form id="sales-invoice-form" class="row g-4" autocomplete="off">
+    @if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+@endif
+@if($errors->any())
+    <div class="alert alert-danger">
+        @foreach($errors->all() as $error) <div>{{ $error }}</div> @endforeach
+    </div>
+@endif
     <!-- شماره فاکتور و قابلیت قفل/ویرایش -->
     <div class="col-12 col-md-4">
         <div class="sales-form-section">
@@ -93,6 +101,8 @@
             </div>
         </div>
     </div>
+    <input type="hidden" name="invoice_items" id="invoice_items_input">
+
     <!-- دکمه ثبت اولیه -->
     <div class="col-12 col-lg-6 d-flex align-items-center justify-content-end">
         <button type="submit" class="btn btn-primary btn-lg px-4 shadow-sm">
@@ -100,6 +110,7 @@
             ثبت فاکتور و افزودن محصولات
         </button>
     </div>
+
 </form>
     {{-- فرم اطلاعات اولیه --}}
     @include('sales.partials.product_list')

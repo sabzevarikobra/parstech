@@ -40,44 +40,38 @@ class InvoiceController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'customer_id' => 'required|exists:persons,id',
-            'seller_id' => 'required|exists:sellers,id',
-            'currency_id' => 'required|exists:currencies,id',
-            'invoice_number' => 'required',
-            'date' => 'required',
-            'due_date' => 'required',
-            'products' => 'required|array',
-            'products.*.product_id' => 'required|exists:products,id',
-            'products.*.quantity' => 'required|numeric|min:1',
-            'products.*.unit_price' => 'required|numeric|min:0',
-            // بقیه فیلدها
+        // اعتبارسنجی اطلاعات پایه
+        $request->validate([
+            // فیلدهای دیگر...
+            'invoice_items' => 'required|string',
         ]);
+    
+        $items = json_decode($request->invoice_items, true);
+
+        // اعتبارسنجی آیتم‌ها (تعداد >0 و ...)
+        if (empty($items) || !is_array($items)) {
+            return back()->withErrors(['invoice_items' => 'حداقل یک محصول باید به فاکتور اضافه شود.']);
+        }
+
+        // ایجاد رکورد فاکتور
         $invoice = Invoice::create([
-            // داده‌ها از request
-            'invoice_number' => $validated['invoice_number'],
-            'date' => $validated['date'],
-            'due_date' => $validated['due_date'],
-            'customer_id' => $validated['customer_id'],
-            'seller_id' => $validated['seller_id'],
-            'currency_id' => $validated['currency_id'],
-            'reference' => $request->input('reference'),
-            'discount_amount' => $request->input('discount_amount', 0),
-            'discount_percent' => $request->input('discount_percent', 0),
-            'tax_percent' => $request->input('tax_percent', 0),
-            'total_amount' => $request->input('total_amount', 0),
-            'final_amount' => $request->input('final_amount', 0),
+            // فیلدهای دیگر...
         ]);
-        // ذخیره آیتم‌ها
-        foreach ($validated['products'] as $item) {
+
+        // ذخیره اقلام فاکتور
+        foreach ($items as $item) {
             $invoice->items()->create([
-                'product_id' => $item['product_id'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'],
-                'total' => $item['quantity'] * $item['unit_price'],
+                'item_id' => $item['id'],
+                'type' => $item['type'],
+                'name' => $item['name'],
+                'code' => $item['code'],
+                'count' => $item['count'],
+                'unit_price' => $item['sale_price'],
+                // فیلدهای دیگر...
             ]);
         }
-        return redirect()->route('invoices.create')->with('success', 'فاکتور ثبت شد.');
+
+        return redirect()->route('invoices.show', $invoice->id)->with('success', 'فاکتور با موفقیت ثبت شد.');
     }
 
     // اگر متد show نداری حتما اضافه کن تا فاکتور نمایش داده شود

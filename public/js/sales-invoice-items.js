@@ -4,6 +4,7 @@
 let invoiceItems = [];
 
 function renderInvoiceItemsTable() {
+    syncInvoiceItemsToForm();
     const tbody = document.getElementById('invoice-items-tbody');
     const totalCell = document.getElementById('invoice-total-cell');
     tbody.innerHTML = '';
@@ -95,3 +96,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // هنگام لود اولیه
     renderInvoiceItemsTable();
 });
+function syncInvoiceItemsToForm() {
+    // آرایه را به صورت JSON در یک input مخفی قرار بده
+    let hiddenInput = document.getElementById('invoice_items_input');
+    if (!hiddenInput) {
+        hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'invoice_items';
+        hiddenInput.id = 'invoice_items_input';
+        document.getElementById('sales-invoice-form').appendChild(hiddenInput);
+    }
+    hiddenInput.value = JSON.stringify(invoiceItems);
+}

@@ -58,23 +58,17 @@ class InvoiceController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'invoiceNumber' => 'required|string|unique:invoices,number',
-            'date' => 'required|string',
-            'dueDate' => 'required|string',
-            'customer_id' => 'required|integer|exists:persons,id',
-            'seller'      => 'nullable|integer|exists:sellers,id',
-            'currency_id' => 'required|integer|exists:currencies,id',
-            'discount_percent' => 'nullable|numeric|min:0|max:100',
-            'discount_amount'  => 'nullable|numeric|min:0',
-            'tax_percent'      => 'nullable|numeric|min:0|max:100',
-            'products'   => 'required|array|min:1',
-            'products.*.qty' => 'required|numeric|min:1',
-            'products.*.price' => 'required|numeric|min:0',
-        ], [
-            'products.required' => 'حداقل یک محصول باید انتخاب شود.',
-            'customer_id.required' => 'مشتری را انتخاب کنید.'
-        ]);
+    $request->validate([
+        'invoiceNumber' => 'required|string|unique:invoices,number',
+        'date' => 'required|date',
+        'dueDate' => 'required|date',
+        'customer_id' => 'required|integer|exists:persons,id',
+        'currency_id' => 'required|integer|exists:currencies,id',
+        'seller' => 'nullable|integer|exists:sellers,id',
+        'products' => 'required|array|min:1',
+        'products.*.qty' => 'required|numeric|min:1',
+        'products.*.price' => 'required|numeric|min:0',
+    ]);
 
 
         // اعتبارسنجی داده‌ها

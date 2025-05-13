@@ -6,7 +6,6 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\BrandController;
-
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinancialController;
 use App\Http\Controllers\InvoiceController;
@@ -21,8 +20,12 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\UnitController;
-
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CurrencyController;
+use App\Http\Controllers\ProvinceController;
+use App\Http\Controllers\SellerController;
+use App\Http\Controllers\ShareholderController;
+
 // Landing page
 Route::get('/', [LandingController::class, 'index'])->name('landing');
 
@@ -52,7 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/store', [PersonController::class, 'store'])->name('store');
         Route::get('/customers', [PersonController::class, 'customers'])->name('customers');
         Route::get('/suppliers', [PersonController::class, 'suppliers'])->name('suppliers');
-
+        Route::get('/api/persons/next-code', [PersonController::class, 'getNextCode'])->name('persons.next-code');
     });
 
     // Sales
@@ -96,6 +99,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products', ProductController::class);
     Route::post('/products/upload', [ProductController::class, 'upload'])->name('products.upload');
     Route::resource('categories', CategoryController::class)->except(['show']);
+    Route::get('categories/list', [CategoryController::class, 'apiList']);
 
     Route::resource('services', ServiceController::class);
 
@@ -107,67 +111,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Invoices
-    Route::get('/invoices/next-number', [InvoiceController::class, 'getNextNumber'])->name('invoices.next-number');
-
     Route::resource('invoices', InvoiceController::class);
+    Route::get('/invoices/next-number', [InvoiceController::class, 'getNextNumber'])->name('invoices.next-number');
+    Route::get('/api/invoices/next-number', [InvoiceController::class, 'getNextNumber']);
+    Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
+    Route::get('/invoices/{id}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
+
     Route::resource('pre-invoices', PreInvoiceController::class);
     Route::get('/quick-sale', [QuickSaleController::class, 'index'])->name('quick-sale');
-    Route::get('/api/invoices/next-number', [InvoiceController::class, 'getNextNumber']);
 
     // Other Resources
     Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
     Route::get('/brands/create', [BrandController::class, 'create'])->name('brands.create');
     Route::post('/units', [UnitController::class, 'store'])->name('units.store');
-});
-Route::middleware('auth')->group(function () {
-    // قبل از require __DIR__.'/auth.php
-    // در کنار سایر route های persons این route را اضافه کنید
-    Route::get('/api/persons/next-code', [PersonController::class, 'getNextCode'])->name('persons.next-code');
-});
-Route::get('/categories/person-search', [\App\Http\Controllers\CategoryController::class, 'personSearch'])->name('categories.person-search');
 
-Route::get('/provinces/{province}/cities', [ProvinceController::class, 'cities'])->name('provinces.cities');
-Route::get('/provinces/{province}/cities', [\App\Http\Controllers\ProvinceController::class, 'cities'])->name('provinces.cities');
-Route::resource('persons', \App\Http\Controllers\PersonController::class);
-Route::get('/invoices/next-number', [InvoiceController::class, 'getNextNumber'])->name('invoices.next-number');
+    // Currencies
+    Route::resource('currencies', CurrencyController::class)->except(['create', 'edit', 'show']);
+    Route::get('/currencies', [CurrencyController::class, 'index'])->name('currencies.index');
 
-Route::get('/api/persons/search', [App\Http\Controllers\PersonController::class, 'searchAjax'])->name('persons.search.ajax');
-Route::resource('currencies', CurrencyController::class)->except(['create', 'edit', 'show']);
-
-Route::get('/currencies', [App\Http\Controllers\CurrencyController::class, 'index'])->name('currencies.index');
-
-// افزودن ارز جدید
-Route::post('/currencies', [\App\Http\Controllers\CurrencyController::class, 'store']);
-
-// ویرایش ارز
-Route::post('/currencies/{currency}', [\App\Http\Controllers\CurrencyController::class, 'update']);
-
-// حذف ارز
-Route::delete('/currencies/{currency}', [\App\Http\Controllers\CurrencyController::class, 'destroy']);
-
-Route::get('shareholders', [\App\Http\Controllers\ShareholderController::class, 'index'])->name('shareholders.index');
-
-
-Route::middleware(['auth'])->group(function () {
+    // Sellers
     Route::prefix('sellers')->name('sellers.')->group(function () {
-        Route::get('/create', [App\Http\Controllers\SellerController::class, 'create'])->name('create');
-        Route::post('/store', [App\Http\Controllers\SellerController::class, 'store'])->name('store');
-        Route::get('/next-code', [App\Http\Controllers\SellerController::class, 'nextCode'])->name('next-code');
-        Route::get('/', [App\Http\Controllers\SellerController::class, 'index'])->name('index');
-        Route::get('/{seller}', [App\Http\Controllers\SellerController::class, 'show'])->name('show');
-        Route::get('/{seller}/edit', [App\Http\Controllers\SellerController::class, 'edit'])->name('edit');
-        Route::put('/{seller}', [App\Http\Controllers\SellerController::class, 'update'])->name('update');
-        Route::delete('/{seller}', [App\Http\Controllers\SellerController::class, 'destroy'])->name('destroy');
+        Route::get('/create', [SellerController::class, 'create'])->name('create');
+        Route::post('/store', [SellerController::class, 'store'])->name('store');
+        Route::get('/next-code', [SellerController::class, 'nextCode'])->name('next-code');
+        Route::get('/', [SellerController::class, 'index'])->name('index');
+        Route::get('/{seller}', [SellerController::class, 'show'])->name('show');
+        Route::get('/{seller}/edit', [SellerController::class, 'edit'])->name('edit');
+        Route::put('/{seller}', [SellerController::class, 'update'])->name('update');
+        Route::delete('/{seller}', [SellerController::class, 'destroy'])->name('destroy');
     });
 });
-Route::get('/api/sellers/list', [App\Http\Controllers\SellerController::class, 'list'])->name('sellers.list');
-Route::get('/api/products/search', [App\Http\Controllers\ProductController::class, 'search'])->name('products.search');
-Route::get('/invoices/{id}/pdf', [\App\Http\Controllers\InvoiceController::class, 'pdf'])->name('invoices.pdf');
 
-Route::post('/invoices', [InvoiceController::class, 'store'])->name('invoices.store');
-Route::get('categories/list', [CategoryController::class, 'list']);
-Route::get('categories/list', [CategoryController::class, 'apiList']);
-
-Route::get('/api/products/search', [ProductController::class, 'search']);
+// API Routes
+Route::get('/api/persons/search', [PersonController::class, 'searchAjax'])->name('persons.search.ajax');
+Route::get('/api/sellers/list', [SellerController::class, 'list'])->name('sellers.list');
+Route::get('/api/products/search', [ProductController::class, 'search'])->name('products.search');
+Route::get('/categories/person-search', [CategoryController::class, 'personSearch'])->name('categories.person-search');
+Route::get('/provinces/{province}/cities', [ProvinceController::class, 'cities'])->name('provinces.cities');
+Route::get('shareholders', [ShareholderController::class, 'index'])->name('shareholders.index');
 
 require __DIR__.'/auth.php';

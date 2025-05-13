@@ -1,34 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'صدور فاکتور جدید')
-
+@section('title', 'صدور فاکتور فروش جدید')
 @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
     <link rel="stylesheet" href="{{ asset('css/invoice-create.css') }}">
-    <style>
-        .amount-section {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .amount-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem;
-            border-bottom: 1px solid #eee;
-        }
-        .discount-tax-section {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin: 1rem 0;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 0.5rem;
-        }
-    </style>
 @endpush
 
 @section('content')
@@ -56,8 +32,7 @@
     <div class="main-content">
         <div class="container py-4">
             <div class="invoice-header">
-                <h2 class="mb-4">صدور فاکتور جدید</h2>
-
+                <h2 class="mb-4">صدور فاکتور فروش جدید</h2>
                 <form action="{{ route('invoices.store') }}" method="POST">
                     @csrf
 
@@ -66,18 +41,15 @@
                         <div class="col-md-4 mb-3">
                             <div class="form-group">
                                 <label for="invoiceNumber">شماره فاکتور</label>
-                                <div class="input-group">
-                                    <input type="text" id="invoiceNumber" name="invoiceNumber"
-                                           class="form-control" value="{{ old('invoiceNumber', $nextInvoiceNumber ?? '') }}" readonly required>
-                                    <div class="input-group-append">
-                                        <div class="input-group-text">
-                                            <div class="custom-control custom-switch">
-                                                <input type="checkbox" class="custom-control-input"
-                                                    id="invoiceNumberSwitch">
-                                                <label class="custom-control-label" for="invoiceNumberSwitch">
-                                                    شماره‌گذاری دستی
-                                                </label>
-                                            </div>
+                                <input type="text" id="invoiceNumber" name="invoiceNumber"
+                                    class="form-control" value="{{ old('invoiceNumber', $nextInvoiceNumber ?? '') }}" readonly required>
+                                <div class="input-group-append">
+                                    <div class="input-group-text">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="invoiceNumberSwitch">
+                                            <label class="custom-control-label" for="invoiceNumberSwitch">
+                                                شماره‌گذاری دستی
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
@@ -92,44 +64,43 @@
                             <div class="form-group">
                                 <label for="reference">ارجاع</label>
                                 <input type="text" id="reference" name="reference"
-                                       class="form-control" placeholder="شماره ارجاع را وارد کنید" value="{{ old('reference') }}">
+                                    class="form-control" placeholder="شماره ارجاع را وارد کنید" value="{{ old('reference') }}">
                                 @error('reference')
                                     <small class="text-danger">{{ $message }}</small>
                                 @enderror
                             </div>
                         </div>
 
-                        <!-- تاریخ -->
-                        <div class="col-md-4">
+                        <!-- تاریخ صدور -->
+                        <div class="col-md-4 mb-3">
                             <div class="form-group">
                                 <label class="form-label required-field">تاریخ صدور فاکتور</label>
                                 <input type="text" name="date" id="date" class="form-control datepicker"
                                     value="{{ old('date') }}" required autocomplete="off">
-                                <small class="form-text text-muted">تاریخ صدور فاکتور (ثبت فاکتور)</small>
+                                <small class="form-text text-muted">تاریخ ثبت فاکتور (شمسی)</small>
                             </div>
                         </div>
 
                         <!-- تاریخ سررسید -->
-                        <div class="col-md-4">
+                        <div class="col-md-4 mb-3">
                             <div class="form-group">
                                 <label class="form-label required-field">تاریخ سررسید</label>
                                 <input type="text" name="dueDate" id="dueDate" class="form-control datepicker"
                                     value="{{ old('dueDate') }}" required autocomplete="off">
-                                <small class="form-text text-muted">موعد پرداخت فاکتور</small>
+                                <small class="form-text text-muted">موعد پرداخت فاکتور (شمسی)</small>
                             </div>
                         </div>
                     </div>
 
-                    <!-- مشتری -->
                     <div class="row mb-3">
+                        <!-- مشتری -->
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label required-field" for="customer_select">مشتری</label>
                                 <select id="customer_select" name="customer_id" class="form-control select2" required>
                                     <option value="">انتخاب مشتری...</option>
                                     @foreach($customers as $customer)
-                                        <option value="{{ $customer->id }}"
-                                            {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                                        <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
                                             {{ $customer->company_name ? $customer->company_name : ($customer->first_name . ' ' . $customer->last_name) }}
                                         </option>
                                     @endforeach
@@ -171,7 +142,7 @@
                         <div id="productList" class="product-list mt-2" style="display: none;"></div>
                     </div>
 
-                    <!-- جدول محصولات -->
+                    <!-- جدول محصولات انتخاب شده -->
                     <div class="table-responsive">
                         <table class="selected-products-table">
                             <thead>
@@ -250,58 +221,4 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/invoice-create.js') }}"></script>
-
-    <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // مقدار شماره فاکتور را هنگام لود از سرور بگیر
-    fetch('/invoices/next-number')
-        .then(res => res.json())
-        .then(data => {
-            let invoiceNumberInput = document.getElementById('invoiceNumber');
-            invoiceNumberInput.value = data.number;
-        });
-
-    // مدیریت سوییچ شماره دستی
-    let invoiceNumberInput = document.getElementById('invoiceNumber');
-    let invoiceNumberSwitch = document.getElementById('invoiceNumberSwitch');
-
-    invoiceNumberSwitch.addEventListener('change', function() {
-        if (this.checked) {
-            invoiceNumberInput.readOnly = false;
-            invoiceNumberInput.value = '';
-            invoiceNumberInput.focus();
-        } else {
-            invoiceNumberInput.readOnly = true;
-            // مقدار شماره اتوماتیک را دوباره از سرور بگیر
-            fetch('/invoices/next-number')
-                .then(res => res.json())
-                .then(data => {
-                    invoiceNumberInput.value = data.number;
-                });
-        }
-    });
-});
-
-$(document).ready(function() {
-    // مقدار قبلی را بگیر (اگر فرم با خطا برگشته باشد)
-    let oldSeller = "{{ old('seller') }}";
-
-    // پر کردن لیست فروشنده‌ها
-    $.getJSON('{{ route('sellers.list') }}', function(data){
-        let $select = $('#seller');
-        $select.empty().append('<option value="">انتخاب فروشنده...</option>');
-        $.each(data, function(i, item){
-            let selected = (oldSeller && oldSeller == item.id) ? 'selected' : '';
-            $select.append(`<option value="${item.id}" ${selected}>${item.text}</option>`);
-        });
-    });
-
-    // اگر select2 می‌خواهی:
-    $('#seller').select2({
-        placeholder: "انتخاب فروشنده...",
-        allowClear: true
-    });
-
-});
-    </script>
 @endpush

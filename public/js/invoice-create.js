@@ -69,7 +69,7 @@ $(document).ready(function () {
         dir: 'rtl',
         placeholder: 'انتخاب فروشنده...',
         ajax: {
-            url: '/api/sellers/search',
+            url: '/sellers/list',
             dataType: 'json',
             delay: 250,
             processResults: function(data) {
@@ -302,5 +302,5 @@ $(document).ready(function () {
         let finalAmount = afterDiscount + taxValue;
         $('#finalAmount').text(toFaNum(finalAmount, 2));
     }
-    
+
 });

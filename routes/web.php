@@ -183,10 +183,11 @@ Route::get('/sales/newform', function () {
 Route::get('/customers/search', function(Request $request) {
     $q = $request->get('q');
     $results = Person::query()
-        ->where('name', 'LIKE', "%$q%")
+        ->where('first_name', 'LIKE', "%$q%")
+        ->orWhere('last_name', 'LIKE', "%$q%")
         ->orWhere('company_name', 'LIKE', "%$q%")
         ->limit(10)
-        ->get(['id', 'name']);
+        ->get(['id', DB::raw("CONCAT(first_name, ' ', last_name) as name")]); // ترکیب نام و نام خانوادگی
     return response()->json($results);
 });
 

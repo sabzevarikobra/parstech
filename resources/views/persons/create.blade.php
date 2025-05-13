@@ -13,12 +13,12 @@
     <div class="row justify-content-center">
         <div class="col-12">
 
-@if(session('success'))
-  <div class="alert alert-success">{{ session('success') }}</div>
-@endif
-@if(session('error'))
-  <div class="alert alert-danger">{{ session('error') }}</div>
-@endif
+            @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
 
             <form id="person-form" action="{{ route('persons.store') }}" method="POST" class="animate-fade-in" novalidate>
                 @csrf
@@ -585,12 +585,6 @@ $(document).ready(function() {
         }
     });
 });
-document.getElementById('generate-code-btn').addEventListener('click', function() {
-    fetch("{{ route('persons.next-code') }}")
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('accounting_code').value = data.code;
-        });
-});
+
 </script>
 @endpush

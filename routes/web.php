@@ -126,8 +126,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/units', [UnitController::class, 'store'])->name('units.store');
 
     // Currencies
-    Route::resource('currencies', CurrencyController::class)->except(['create', 'edit', 'show']);
-    Route::get('/currencies', [CurrencyController::class, 'index'])->name('currencies.index');
 
     // Sellers
     Route::prefix('sellers')->name('sellers.')->group(function () {
@@ -140,6 +138,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{seller}', [SellerController::class, 'update'])->name('update');
         Route::delete('/{seller}', [SellerController::class, 'destroy'])->name('destroy');
     });
+
+    Route::get('/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
+    Route::post('/invoices/store', [InvoiceController::class, 'store'])->name('invoices.store');
+    Route::get('/sellers/list', [SellerController::class, 'list'])->name('sellers.list');
+
 });
 
 // API Routes
@@ -149,5 +152,27 @@ Route::get('/api/products/search', [ProductController::class, 'search'])->name('
 Route::get('/categories/person-search', [CategoryController::class, 'personSearch'])->name('categories.person-search');
 Route::get('/provinces/{province}/cities', [ProvinceController::class, 'cities'])->name('provinces.cities');
 Route::get('shareholders', [ShareholderController::class, 'index'])->name('shareholders.index');
+
+
+Route::get('/currencies', [CurrencyController::class, 'index'])->name('currencies.index');
+Route::post('/currencies', [CurrencyController::class, 'store'])->name('currencies.store');
+Route::put('/currencies/{currency}', [CurrencyController::class, 'update'])->name('currencies.update');
+Route::delete('/currencies/{currency}', [CurrencyController::class, 'destroy'])->name('currencies.destroy');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 require __DIR__.'/auth.php';

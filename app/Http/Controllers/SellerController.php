@@ -155,23 +155,17 @@ class SellerController extends Controller
     return redirect()->route('sellers.index')->with('success', 'ویرایش فروشنده با موفقیت انجام شد.');
     }
 // گرفتن لیست فروشنده‌ها برای نمایش در فاکتور جدید
-public function list()
+public function list(Request $request)
 {
-    // فقط id و نام فروشنده (نام + نام خانوادگی یا فقط یکی) را برگردان
-    $sellers = \App\Models\Seller::select('id', 'first_name', 'last_name', 'nickname')
-        ->orderBy('first_name')
-        ->get();
-
-    $result = $sellers->map(function($s) {
-        $name = trim($s->first_name . ' ' . $s->last_name);
-        if(!$name && $s->nickname) $name = $s->nickname;
-        if(!$name) $name = 'بدون نام';
-        return [
-            'id' => $s->id,
-            'text' => $name
-        ];
-    });
-    return response()->json($result);
+    $term = $request->input('term');
+    $query = Seller::query();
+    if ($term) {
+        $query->where('first_name', 'like', "%$term%")
+              ->orWhere('last_name', 'like', "%$term%")
+              ->orWhere('company_name', 'like', "%$term%");
+    }
+    $sellers = $query->selectRaw('id, CONCAT_WS(" ", first_name, last_name, COALESCE(company_name,"")) as text')->limit(20)->get();
+    return response()->json($sellers);
 }
 }
 

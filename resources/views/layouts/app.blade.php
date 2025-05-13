@@ -60,6 +60,12 @@
             </tbody>
           </table>
           <hr>
+          <form id="currencyForm" autocomplete="off">
+            <input type="text" id="curTitle" placeholder="نام ارز">
+            <input type="text" id="curSymbol" placeholder="نماد">
+            <input type="text" id="curCode" placeholder="کد">
+            <button type="submit">ثبت</button>
+        </form>
           <!-- فرم افزودن/ویرایش ارز -->
           <div class="row">
             <div class="col-md-4">

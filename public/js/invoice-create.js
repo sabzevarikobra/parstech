@@ -69,7 +69,7 @@ $(document).ready(function () {
         dir: 'rtl',
         placeholder: 'انتخاب فروشنده...',
         ajax: {
-            url: '/sellers/list',
+            url: '/api/sellers/search',
             dataType: 'json',
             delay: 250,
             processResults: function(data) {

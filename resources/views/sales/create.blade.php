@@ -113,5 +113,53 @@
 <script src="{{ asset('js/sales-invoice-init.js') }}"></script>
 <script src="{{ asset('js/sales-products.js') }}"></script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const customerSearchInput = document.getElementById("customer_search");
+        const customerSearchResults = document.getElementById("customer-search-results");
+        const customerIdInput = document.getElementById("customer_id");
 
+        customerSearchInput.addEventListener("input", function () {
+            const query = customerSearchInput.value.trim();
+            if (query.length === 0) {
+                customerSearchResults.classList.remove("show");
+                customerSearchResults.innerHTML = "";
+                return;
+            }
+
+            fetch(`/customers/search?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    customerSearchResults.innerHTML = "";
+                    if (data.length > 0) {
+                        data.forEach(customer => {
+                            const item = document.createElement("div");
+                            item.className = "dropdown-item";
+                            item.textContent = customer.name;
+                            item.dataset.id = customer.id;
+                            item.addEventListener("click", function () {
+                                customerSearchInput.value = customer.name;
+                                customerIdInput.value = customer.id;
+                                customerSearchResults.classList.remove("show");
+                            });
+                            customerSearchResults.appendChild(item);
+                        });
+                        customerSearchResults.classList.add("show");
+                    } else {
+                        customerSearchResults.innerHTML = "<div class='dropdown-item text-muted'>موردی یافت نشد.</div>";
+                        customerSearchResults.classList.add("show");
+                    }
+                })
+                .catch(error => {
+                    console.error("خطا در جستجو:", error);
+                });
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!customerSearchResults.contains(event.target) && event.target !== customerSearchInput) {
+                customerSearchResults.classList.remove("show");
+            }
+        });
+    });
+    </script>
 @endsection

@@ -180,12 +180,13 @@ Route::get('/sales/newform', function () {
     ]);
 })->name('sales.newform');
 
-Route::get('/customers/search', function(Request $request) {
-    $q = $request->get('q');
+Route::get('/customers/search', function (Request $request) {
+    $q = $request->get('q'); // دریافت رشته جستجو
     $results = Person::query()
         ->where('first_name', 'LIKE', "%$q%")
         ->orWhere('last_name', 'LIKE', "%$q%")
-        ->orWhere('company_name', 'LIKE', "%$q%")
+        ->orWhere('nickname', 'LIKE', "%$q%")
+        ->orWhere('company_name', 'LIKE', "%$q%") // جستجو در نام شرکت (در صورت وجود)
         ->limit(10)
         ->get(['id', DB::raw("CONCAT(first_name, ' ', last_name) as name")]); // ترکیب نام و نام خانوادگی
     return response()->json($results);

@@ -47,18 +47,14 @@
         <div class="form-text text-muted mt-1">نام مشتری را تایپ کنید و انتخاب نمایید.</div>
     </div>
     <!-- فروشنده -->
-    <div class="col-12 col-md-4">
-        <div class="sales-form-section">
-            <label class="sales-form-label mb-2" for="seller_id">فروشنده</label>
-            <select class="form-select sales-form-select" name="seller_id" id="seller_id" required>
-                <option value="">انتخاب کنید</option>
-                @foreach($sellers as $seller)
-                    <option value="{{ $seller->id }}" {{ old('seller_id') == $seller->id ? 'selected' : '' }}>
-                        {{ $seller->name }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+    <div class="mb-3">
+        <label for="seller_id" class="form-label">فروشنده</label>
+        <select id="seller_id" name="seller_id" class="form-select" required>
+            <option value="">انتخاب فروشنده</option>
+            @foreach($sellers as $seller)
+            <option value="{{ $seller->id }}">{{ $seller->first_name }} {{ $seller->last_name }}</option>
+            @endforeach
+        </select>
     </div>
     <!-- واحد پول و تاریخ صدور و سررسید -->
     <div class="col-12 col-lg-6">

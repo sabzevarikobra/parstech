@@ -177,8 +177,8 @@ Route::get('/sales/newform', [InvoiceController::class, 'newForm'])->name('sales
 Route::get('/sales/newform', function () {
     return view('sales.create', [
         'sellers' => \App\Models\Seller::all(),
+        'products' => \App\Models\Product::all(), // اضافه کردن لیست محصولات
         'currencies' => \App\Models\Currency::all(),
-        // هر دیتا دیگری که فرم لازم دارد هم اضافه کن!
     ]);
 })->name('sales.newform');
 

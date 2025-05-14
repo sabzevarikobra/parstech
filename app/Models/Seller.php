@@ -11,10 +11,13 @@ class Seller extends Model
 
     protected $fillable = [
         'seller_code', 'first_name', 'last_name', 'nickname', 'mobile', 'image', 'code_editable',
-        'company_name', 'title', 'national_code', 'economic_code', 'registration_number', 'branch_code', 'description'
+        'company_name', 'title', 'national_code', 'economic_code', 'registration_number',
+        'branch_code', 'description'
     ];
-    public function bankAccounts()
+
+    // ارتباط با فروش‌ها
+    public function sales()
     {
-        return $this->hasMany(SellerBankAccount::class);
+        return $this->hasMany(Sale::class);
     }
 }

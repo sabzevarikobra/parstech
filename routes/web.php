@@ -27,6 +27,8 @@ use App\Http\Controllers\SellerController;
 use App\Http\Controllers\ShareholderController;
 use App\Models\Person;
 use Illuminate\Http\Request;
+use App\Http\Controllers\SaleController;
+
 
 Route::get('/sales/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
 
@@ -181,14 +183,17 @@ Route::get('/sales/newform', function () {
 })->name('sales.newform');
 
 Route::get('/customers/search', function (Request $request) {
-    $q = $request->get('q'); // دریافت رشته جستجو
+    $q = $request->get('q');
+
     $results = Person::query()
         ->where('first_name', 'LIKE', "%$q%")
         ->orWhere('last_name', 'LIKE', "%$q%")
         ->orWhere('nickname', 'LIKE', "%$q%")
-        ->orWhere('company_name', 'LIKE', "%$q%") // جستجو در نام شرکت (در صورت وجود)
+        ->orWhere('company_name', 'LIKE', "%$q%")
+        ->orWhere('accounting_code', 'LIKE', "%$q%") // اضافه کردن کد حسابداری به جستجو
         ->limit(10)
-        ->get(['id', DB::raw("CONCAT(first_name, ' ', last_name) as name")]); // ترکیب نام و نام خانوادگی
+        ->get(['id', DB::raw("CONCAT(first_name, ' ', last_name) as name")]);
+
     return response()->json($results);
 });
 
@@ -205,6 +210,6 @@ Route::get('/api/customers/search', function(Request $request) {
 Route::resource('persons', \App\Http\Controllers\PersonController::class);
 Route::get('persons/next-code', [PersonController::class, 'nextCode'])->name('persons.next-code');
 
-
+Route::resource('sales', SaleController::class);
 
 require __DIR__.'/auth.php';

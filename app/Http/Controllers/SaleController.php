@@ -43,12 +43,12 @@ class SaleController extends Controller
         return redirect()->route('sales.index')->with('success', 'فاکتور با موفقیت ثبت شد.');
     }
     public function nextInvoiceNumber()
-{
-    $last = \App\Models\Sale::orderByDesc('id')->first();
-    $number = 'invoices-10001';
-    if ($last && preg_match('/invoices-(\d+)/', $last->invoice_number, $m)) {
-        $number = 'invoices-' . (intval($m[1]) + 1);
+    {
+        $last = \App\Models\Sale::orderByDesc('id')->first();
+        $number = 'invoices-10001';
+        if ($last && preg_match('/invoices-(\d+)/', $last->invoice_number, $m)) {
+            $number = 'invoices-' . (intval($m[1]) + 1);
+        }
+        return response()->json(['number' => $number]);
     }
-    return response()->json(['number' => $number]);
-}
 }

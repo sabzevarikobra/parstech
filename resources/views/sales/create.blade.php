@@ -55,6 +55,7 @@
         <div class="dropdown-menu" id="customer-search-results" style="width:100%"></div>
         <div class="form-text text-muted mt-1">نام مشتری را تایپ کنید و انتخاب نمایید.</div>
     </div>
+
     <!-- فروشنده -->
     <div class="col-12 col-md-4">
         <div class="sales-form-section">
@@ -62,13 +63,21 @@
             <select class="form-select sales-form-select" name="seller_id" id="seller_id" required>
                 <option value="">انتخاب کنید</option>
                 @foreach($sellers as $seller)
-                    <option value="{{ $seller->id }}" {{ old('seller_id') == $seller->id ? 'selected' : '' }}>
-                        {{ $seller->name }}
+                    <option value="{{ $seller->id }}"
+                        {{ old('seller_id') == $seller->id ? 'selected' : '' }}>
+                        {{ $seller->seller_code }} -
+                        {{ $seller->first_name }} {{ $seller->last_name }}
+                        @if($seller->company_name)
+                            ({{ $seller->company_name }})
+                        @elseif($seller->title)
+                            ({{ $seller->title }})
+                        @endif
                     </option>
                 @endforeach
             </select>
         </div>
     </div>
+
     <!-- واحد پول و تاریخ صدور و سررسید -->
     <div class="col-12 col-lg-6">
         <div class="sales-form-section">

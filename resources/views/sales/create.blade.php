@@ -2,20 +2,15 @@
 
 @section('content')
 <link rel="stylesheet" href="{{ asset('css/invoice-create.css') }}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" />
-
 <form id="sales-invoice-form" class="row g-4" autocomplete="off">
     @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-    @if($errors->any())
-        <div class="alert alert-danger">
-            @foreach($errors->all() as $error)
-                <div>{{ $error }}</div>
-            @endforeach
-        </div>
-    @endif
-
+    <div class="alert alert-success">{{ session('success') }}</div>
+@endif
+@if($errors->any())
+    <div class="alert alert-danger">
+        @foreach($errors->all() as $error) <div>{{ $error }}</div> @endforeach
+    </div>
+@endif
     <!-- شماره فاکتور و قابلیت قفل/ویرایش -->
     <div class="col-12 col-md-4">
         <div class="sales-form-section">
@@ -26,9 +21,15 @@
                 </span>
             </label>
             <div class="input-group">
-                <input type="text" class="form-control sales-form-input" id="invoice_number" name="invoice_number"
-                       value="{{ old('invoice_number', $nextNumber ?? '') }}" readonly>
-                <button class="btn btn-light border" type="button" id="edit-invoice-number-btn" data-locked="true" aria-label="ویرایش شماره فاکتور">
+                <input type="text"
+                       class="form-control sales-form-input"
+                       id="invoice_number"
+                       name="invoice_number"
+                       value="{{ old('invoice_number', $nextNumber ?? '') }}"
+                       readonly
+                >
+                <button class="btn btn-light border" type="button" id="edit-invoice-number-btn"
+                    data-locked="true" aria-label="ویرایش شماره فاکتور">
                     <i class="fa-solid fa-lock text-secondary" id="invoice-lock-icon"></i>
                 </button>
             </div>
@@ -37,7 +38,6 @@
             </div>
         </div>
     </div>
-
     <!-- نام مشتری -->
     <div class="col-12 col-md-4">
         <label for="customer_search" class="form-label">مشتری</label>
@@ -46,18 +46,20 @@
         <div class="dropdown-menu" id="customer-search-results" style="width:100%"></div>
         <div class="form-text text-muted mt-1">نام مشتری را تایپ کنید و انتخاب نمایید.</div>
     </div>
-
     <!-- فروشنده -->
     <div class="col-12 col-md-4">
-        <label for="seller_id" class="form-label">فروشنده</label>
-        <select id="seller_id" name="seller_id" class="form-select" required>
-            <option value="">انتخاب فروشنده</option>
-            @foreach($sellers as $seller)
-                <option value="{{ $seller->id }}">{{ $seller->first_name }} {{ $seller->last_name }}</option>
-            @endforeach
-        </select>
+        <div class="sales-form-section">
+            <label class="sales-form-label mb-2" for="seller_id">فروشنده</label>
+            <select class="form-select sales-form-select" name="seller_id" id="seller_id" required>
+                <option value="">انتخاب کنید</option>
+                @foreach($sellers as $seller)
+                    <option value="{{ $seller->id }}" {{ old('seller_id') == $seller->id ? 'selected' : '' }}>
+                        {{ $seller->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
     </div>
-
     <!-- واحد پول و تاریخ صدور و سررسید -->
     <div class="col-12 col-lg-6">
         <div class="sales-form-section">
@@ -74,24 +76,23 @@
                     </select>
                 </div>
                 <div class="col-12 col-md-4">
-                    <label class="sales-form-label mb-2" for="issued_at">تاریخ صدور (شمسی با ساعت)</label>
-                    <input type="text" class="form-control sales-form-input" id="issued_at" name="issued_at"
-                           value="{{ old('issued_at') }}" autocomplete="off" readonly>
+                    <label class="sales-form-label mb-2" for="issued_at">تاریخ صدور</label>
+                    <input type="datetime-local" class="form-control sales-form-input" id="issued_at" name="issued_at"
+                        value="{{ old('issued_at', now()->format('Y-m-d\TH:i')) }}">
                 </div>
                 <div class="col-12 col-md-4">
                     <label class="sales-form-label mb-2" for="due_at">
-                        تاریخ سررسید (شمسی)
+                        تاریخ سررسید
                         <span class="ms-1" data-bs-toggle="tooltip" title="در این تاریخ هشدار پرداخت صادر می‌شود.">
                             <i class="fa-regular fa-bell text-primary"></i>
                         </span>
                     </label>
-                    <input type="text" class="form-control sales-form-input" id="due_at" name="due_at"
-                           value="{{ old('due_at') }}" autocomplete="off" readonly>
+                    <input type="date" class="form-control sales-form-input" id="due_at" name="due_at"
+                        value="{{ old('due_at', now()->addDays(7)->format('Y-m-d')) }}">
                 </div>
             </div>
         </div>
     </div>
-
     <input type="hidden" name="invoice_items" id="invoice_items_input">
 
     <!-- دکمه ثبت اولیه -->
@@ -101,36 +102,65 @@
             ثبت فاکتور و افزودن محصولات
         </button>
     </div>
-</form>
 
-@include('sales.partials.product_list')
-@include('sales.partials.invoice_items_table')
+</form>
+    {{-- فرم اطلاعات اولیه --}}
+    @include('sales.partials.product_list')
+    {{-- جدول اقلام فاکتور --}}
+    @include('sales.partials.invoice_items_table')
 @endsection
 
 @section('scripts')
-<!-- ترتیب بارگذاری مهم است -->
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-date@0.1.8/dist/persian-date.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-<script>
-$(document).ready(function () {
-    // انتخابگر تاریخ صدور با ساعت
-    $('#issued_at').persianDatepicker({
-        format: 'YYYY/MM/DD HH:mm',
-        initialValue: true,
-        autoClose: true,
-        timePicker: { enabled: true, step: 1 },
-        calendar: { persian: {enabled: true, locale: 'fa'} }
-    });
+<script src="{{ asset('js/sales-invoice-init.js') }}"></script>
+<script src="{{ asset('js/sales-products.js') }}"></script>
 
-    // انتخابگر تاریخ سررسید فقط روز
-    $('#due_at').persianDatepicker({
-        format: 'YYYY/MM/DD',
-        initialValue: true,
-        autoClose: true,
-        timePicker: { enabled: false },
-        calendar: { persian: {enabled: true, locale: 'fa'} }
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const customerSearchInput = document.getElementById("customer_search");
+        const customerSearchResults = document.getElementById("customer-search-results");
+        const customerIdInput = document.getElementById("customer_id");
+
+        customerSearchInput.addEventListener("input", function () {
+            const query = customerSearchInput.value.trim();
+            if (query.length === 0) {
+                customerSearchResults.classList.remove("show");
+                customerSearchResults.innerHTML = "";
+                return;
+            }
+
+            fetch(`/customers/search?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    customerSearchResults.innerHTML = "";
+                    if (data.length > 0) {
+                        data.forEach(customer => {
+                            const item = document.createElement("div");
+                            item.className = "dropdown-item";
+                            item.textContent = customer.name;
+                            item.dataset.id = customer.id;
+                            item.addEventListener("click", function () {
+                                customerSearchInput.value = customer.name;
+                                customerIdInput.value = customer.id;
+                                customerSearchResults.classList.remove("show");
+                            });
+                            customerSearchResults.appendChild(item);
+                        });
+                        customerSearchResults.classList.add("show");
+                    } else {
+                        customerSearchResults.innerHTML = "<div class='dropdown-item text-muted'>موردی یافت نشد.</div>";
+                        customerSearchResults.classList.add("show");
+                    }
+                })
+                .catch(error => {
+                    console.error("خطا در جستجو:", error);
+                });
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!customerSearchResults.contains(event.target) && event.target !== customerSearchInput) {
+                customerSearchResults.classList.remove("show");
+            }
+        });
     });
-});
-</script>
+    </script>
 @endsection

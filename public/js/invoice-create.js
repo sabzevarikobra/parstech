@@ -1,22 +1,33 @@
 $(document).ready(function () {
     // ------------------ مقداردهی و تنظیم تاریخ شمسی ------------------
-    function getTodayPersian() {
-        if (typeof persianDate !== 'undefined') {
-            return new persianDate().format('YYYY/MM/DD');
-        }
-        let d = new Date();
-        let y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
-        return y + '/' + (m < 10 ? '0' + m : m) + '/' + (day < 10 ? '0' + day : day);
-    }
-    if(!$('#date').val()) $('#date').val(getTodayPersian());
-    if(!$('#dueDate').val()) $('#dueDate').val(getTodayPersian());
-    $('#date, #dueDate').persianDatepicker({
-        format: 'YYYY/MM/DD',
-        autoClose: true,
-        persianDigit: true,
-        initialValue: false
-    });
 
+    $('#issued_at_jalali').persianDatepicker({
+        format: 'YYYY/MM/DD',
+        initialValue: false,
+        autoClose: true,
+        onSelect: function(unix) {
+            let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
+            $('#issued_at').val(pd);
+        }
+    });
+    $('#due_at_jalali').persianDatepicker({
+        format: 'YYYY/MM/DD',
+        initialValue: false,
+        autoClose: true,
+        onSelect: function(unix) {
+            let pd = new persianDate(unix).toLocale('en').format('YYYY-MM-DD');
+            $('#due_at').val(pd);
+        }
+    });
+        // اگر مقدار قبلی وجود داشت، مقدار hidden را تنظیم کن
+        if ($('#issued_at_jalali').val()) {
+            let val = $('#issued_at_jalali').val().replace(/\//g, '-');
+            $('#issued_at').val(val);
+        }
+        if ($('#due_at_jalali').val()) {
+            let val = $('#due_at_jalali').val().replace(/\//g, '-');
+            $('#due_at').val(val);
+        }
     // ------------------ مقداردهی خودکار واحد پول به "ریال" ------------------
     let $currencySelect = $('#currency_id');
     if ($currencySelect.length) {

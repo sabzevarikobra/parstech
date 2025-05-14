@@ -211,5 +211,6 @@ Route::resource('persons', \App\Http\Controllers\PersonController::class);
 Route::get('persons/next-code', [PersonController::class, 'nextCode'])->name('persons.next-code');
 
 Route::resource('sales', SaleController::class);
+Route::get('/api/invoices/next-number', [\App\Http\Controllers\SaleController::class, 'nextInvoiceNumber']);
 
 require __DIR__.'/auth.php';

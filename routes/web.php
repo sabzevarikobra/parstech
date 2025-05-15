@@ -223,7 +223,13 @@ Route::get('/api/invoices/next-number', [\App\Http\Controllers\SaleController::c
 // ایجکس محصولات و خدمات
 Route::get('/products/ajax-list', [\App\Http\Controllers\ProductController::class, 'ajaxList']);
 Route::get('/services/ajax-list', [\App\Http\Controllers\ServiceController::class, 'ajaxList']);
-Route::get('/categories', [CategoryApiController::class, 'index']);
-Route::get('/products', [ProductApiController::class, 'index']);
-Route::get('/services', [ServiceApiController::class, 'index']);
+
+
+// برای محصولات
+Route::get('/products/ajax-list', [ProductController::class, 'ajaxList']);
+// برای خدمات (اگر نیاز است)
+Route::get('/services/ajax-list', [ServiceController::class, 'ajaxList']);
+// برای دسته‌بندی‌ها اگر لازم است
+Route::get('/api/categories', [CategoryController::class, 'apiList']);
+
 require __DIR__.'/auth.php';

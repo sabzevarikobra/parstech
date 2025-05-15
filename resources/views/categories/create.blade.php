@@ -12,10 +12,12 @@
         </div>
         <div class="card-body category-create-body">
 
+            {{-- پیام موفقیت --}}
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
 
+            {{-- نمایش خطاها --}}
             @if($errors->any())
                 <div class="alert alert-danger">
                     <ul class="mb-0">
@@ -26,6 +28,7 @@
                 </div>
             @endif
 
+            {{-- دکمه‌های تب‌بندی --}}
             <div class="mb-4 d-flex justify-content-center category-create-tabs">
                 <button type="button" class="btn category-create-tab-btn" id="btn-person" onclick="showTab('person')">دسته‌بندی اشخاص</button>
                 <button type="button" class="btn category-create-tab-btn" id="btn-product" onclick="showTab('product')">دسته‌بندی کالا</button>
@@ -40,7 +43,7 @@
                     <div class="img-upload-wrapper">
                         <img id="img-person" src="{{ asset('img/category-person.png') }}" alt="پیش‌فرض اشخاص" class="img-thumbnail category-create-img" onclick="triggerFileInput('person_image')">
                         <div class="img-overlay" onclick="triggerFileInput('person_image')"><span>تغییر</span></div>
-                        <input type="file" name="image" id="person_image" class="form-control category-create-input img-hidden-input" accept="image/*" onchange="previewImage(this, 'img-person')" style="display:none;">
+                        <input type="file" name="image" id="person_image" class="form-control category-create-input img-hidden-input" accept="image/*" onchange="previewImage(this, 'img-person')" style="display: none;">
                     </div>
                 </div>
                 <div class="mb-3">
@@ -77,7 +80,7 @@
                     <div class="img-upload-wrapper">
                         <img id="img-product" src="{{ asset('img/category-product.png') }}" alt="پیش‌فرض کالا" class="img-thumbnail category-create-img" onclick="triggerFileInput('product_image')">
                         <div class="img-overlay" onclick="triggerFileInput('product_image')"><span>تغییر</span></div>
-                        <input type="file" name="image" id="product_image" class="form-control category-create-input img-hidden-input" accept="image/*" onchange="previewImage(this, 'img-product')" style="display:none;">
+                        <input type="file" name="image" id="product_image" class="form-control category-create-input img-hidden-input" accept="image/*" onchange="previewImage(this, 'img-product')" style="display: none;">
                     </div>
                 </div>
                 <div class="mb-3">
@@ -97,21 +100,6 @@
                         @endforeach
                     </select>
                 </div>
-
-                <div class="mb-3">
-                    <label for="product_category_list" class="form-label category-create-label">دسته‌بندی کالا</label>
-                    <select id="product_category_list" class="form-control category-create-input">
-                        <option value="">انتخاب دسته‌بندی کالا</option>
-                        @foreach($productCategories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="product_filter" class="form-label category-create-label">فیلتر محصولات</label>
-                    <input type="text" id="product_filter" class="form-control category-create-input" placeholder="نام یا کد محصول...">
-                </div>
-                <div id="product_list_box" class="mb-3"></div>
                 <div class="mb-3">
                     <label for="product_description" class="form-label category-create-label">توضیحات</label>
                     <textarea name="description" id="product_description" class="form-control category-create-input" rows="2"></textarea>
@@ -129,7 +117,7 @@
                     <div class="img-upload-wrapper">
                         <img id="img-service" src="{{ asset('img/category-service.png') }}" alt="پیش‌فرض خدمات" class="img-thumbnail category-create-img" onclick="triggerFileInput('service_image')">
                         <div class="img-overlay" onclick="triggerFileInput('service_image')"><span>تغییر</span></div>
-                        <input type="file" name="image" id="service_image" class="form-control category-create-input img-hidden-input" accept="image/*" onchange="previewImage(this, 'img-service')" style="display:none;">
+                        <input type="file" name="image" id="service_image" class="form-control category-create-input img-hidden-input" accept="image/*" onchange="previewImage(this, 'img-service')" style="display: none;">
                     </div>
                 </div>
                 <div class="mb-3">
@@ -149,21 +137,6 @@
                         @endforeach
                     </select>
                 </div>
-
-                <div class="mb-3">
-                    <label for="service_category_list" class="form-label category-create-label">دسته‌بندی خدمات</label>
-                    <select id="service_category_list" class="form-control category-create-input">
-                        <option value="">انتخاب دسته‌بندی خدمات</option>
-                        @foreach($serviceCategories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="service_filter" class="form-label category-create-label">فیلتر خدمات</label>
-                    <input type="text" id="service_filter" class="form-control category-create-input" placeholder="نام یا کد خدمت...">
-                </div>
-                <div id="service_list_box" class="mb-3"></div>
                 <div class="mb-3">
                     <label for="service_description" class="form-label category-create-label">توضیحات</label>
                     <textarea name="description" id="service_description" class="form-control category-create-input" rows="2"></textarea>
@@ -173,184 +146,78 @@
                 </div>
             </form>
 
-            {{-- لیست فروش --}}
-            <div id="sale_items_box" class="mt-5"></div>
-
         </div>
     </div>
 </div>
 
 <script>
-const tabColors = {
-    person: {
-        bg: '#1a73e8',
-        btn: '#1a73e8',
-        btnClass: 'tab-person',
-        card: '#e3f0ff'
-    },
-    product: {
-        bg: '#388e3c',
-        btn: '#388e3c',
-        btnClass: 'tab-product',
-        card: '#e8f5e9'
-    },
-    service: {
-        bg: '#fbc02d',
-        btn: '#fbc02d',
-        btnClass: 'tab-service',
-        card: '#fffde7'
+    const tabColors = {
+        person: {
+            bg: '#1a73e8',
+            btn: '#1a73e8',
+            btnClass: 'tab-person',
+            card: '#e3f0ff'
+        },
+        product: {
+            bg: '#388e3c',
+            btn: '#388e3c',
+            btnClass: 'tab-product',
+            card: '#e8f5e9'
+        },
+        service: {
+            bg: '#fbc02d',
+            btn: '#fbc02d',
+            btnClass: 'tab-service',
+            card: '#fffde7'
+        }
+    };
+
+    function showTab(type) {
+        document.getElementById('form-person').style.display = (type === 'person') ? 'block' : 'none';
+        document.getElementById('form-product').style.display = (type === 'product') ? 'block' : 'none';
+        document.getElementById('form-service').style.display = (type === 'service') ? 'block' : 'none';
+
+        document.getElementById('btn-person').classList.remove('active', 'tab-person');
+        document.getElementById('btn-product').classList.remove('active', 'tab-product');
+        document.getElementById('btn-service').classList.remove('active', 'tab-service');
+
+        document.getElementById('btn-person').style.background = 'transparent';
+        document.getElementById('btn-product').style.background = 'transparent';
+        document.getElementById('btn-service').style.background = 'transparent';
+        document.getElementById('btn-person').style.color = '#1a73e8';
+        document.getElementById('btn-product').style.color = '#388e3c';
+        document.getElementById('btn-service').style.color = '#fbc02d';
+
+        document.getElementById('btn-' + type).classList.add('active', tabColors[type].btnClass);
+        document.getElementById('btn-' + type).style.background = tabColors[type].btn;
+        document.getElementById('btn-' + type).style.color = '#fff';
+
+        document.getElementById('category-create-header').style.background = tabColors[type].bg;
+        document.getElementById('category-create-card').style.background = tabColors[type].card;
+
+        let label = '';
+        if (type === 'person') label = 'ایجاد دسته‌بندی اشخاص';
+        if (type === 'product') label = 'ایجاد دسته‌بندی کالا';
+        if (type === 'service') label = 'ایجاد دسته‌بندی خدمات';
+        document.getElementById('category-create-title').textContent = label;
     }
-};
 
-function showTab(type) {
-    document.getElementById('form-person').style.display = (type === 'person') ? 'block' : 'none';
-    document.getElementById('form-product').style.display = (type === 'product') ? 'block' : 'none';
-    document.getElementById('form-service').style.display = (type === 'service') ? 'block' : 'none';
+    document.addEventListener("DOMContentLoaded", function() {
+        showTab('product');
+    });
 
-    document.getElementById('btn-person').classList.remove('active', 'tab-person');
-    document.getElementById('btn-product').classList.remove('active', 'tab-product');
-    document.getElementById('btn-service').classList.remove('active', 'tab-service');
-
-    document.getElementById('btn-person').style.background = 'transparent';
-    document.getElementById('btn-product').style.background = 'transparent';
-    document.getElementById('btn-service').style.background = 'transparent';
-    document.getElementById('btn-person').style.color = '#1a73e8';
-    document.getElementById('btn-product').style.color = '#388e3c';
-    document.getElementById('btn-service').style.color = '#fbc02d';
-
-    document.getElementById('btn-' + type).classList.add('active', tabColors[type].btnClass);
-    document.getElementById('btn-' + type).style.background = tabColors[type].btn;
-    document.getElementById('btn-' + type).style.color = '#fff';
-
-    document.getElementById('category-create-header').style.background = tabColors[type].bg;
-    document.getElementById('category-create-card').style.background = tabColors[type].card;
-
-    let label = '';
-    if (type === 'person') label = 'ایجاد دسته‌بندی اشخاص';
-    if (type === 'product') label = 'ایجاد دسته‌بندی کالا';
-    if (type === 'service') label = 'ایجاد دسته‌بندی خدمات';
-    document.getElementById('category-create-title').textContent = label;
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    showTab('product');
-    loadProducts();
-    loadServices();
-});
-
-// نمایش تصویر انتخابی
-function previewImage(input, imgId) {
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            document.getElementById(imgId).src = e.target.result;
-        };
-        reader.readAsDataURL(input.files[0]);
+    function previewImage(input, imgId) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById(imgId).src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
     }
-}
-function triggerFileInput(inputId) {
-    document.getElementById(inputId).click();
-}
 
-// محصولات تب کالا
-document.getElementById('product_category_list').addEventListener('change', loadProducts);
-document.getElementById('product_filter').addEventListener('input', loadProducts);
-
-function loadProducts() {
-    let cat_id = document.getElementById('product_category_list').value;
-    let q = document.getElementById('product_filter').value.trim();
-    fetch(`/products/ajax-list?category_id=${cat_id}&q=${encodeURIComponent(q)}`)
-        .then(r=>r.json())
-        .then(data => {
-            let html = '';
-            if(data.length === 0) html = '<div class="text-muted">محصولی یافت نشد.</div>';
-            else {
-                html = '<ul class="list-group">';
-                data.forEach(function(p){
-                    html += `<li class="list-group-item d-flex align-items-center product-item" data-id="${p.id}" data-name="${p.name}">
-                        <img src="${p.image}" alt="" class="rounded me-2" style="width:40px;height:40px;object-fit:cover;">
-                        <div>
-                            <strong>${p.name}</strong> <span class="text-muted small">(${p.code})</span>
-                            <div class="text-muted small">${p.category}</div>
-                        </div>
-                    </li>`;
-                });
-                html += '</ul>';
-            }
-            document.getElementById('product_list_box').innerHTML = html;
-            document.querySelectorAll('.product-item').forEach(function(item){
-                item.addEventListener('click', function(){
-                    addToSaleList({
-                        id: this.dataset.id,
-                        name: this.dataset.name,
-                        type: 'product'
-                    });
-                });
-            });
-        });
-}
-
-// خدمات تب خدمات
-document.getElementById('service_category_list').addEventListener('change', loadServices);
-document.getElementById('service_filter').addEventListener('input', loadServices);
-
-function loadServices() {
-    let cat_id = document.getElementById('service_category_list').value;
-    let q = document.getElementById('service_filter').value.trim();
-    fetch(`/services/ajax-list?category_id=${cat_id}&q=${encodeURIComponent(q)}`)
-        .then(r=>r.json())
-        .then(data => {
-            let html = '';
-            if(data.length === 0) html = '<div class="text-muted">خدمتی یافت نشد.</div>';
-            else {
-                html = '<ul class="list-group">';
-                data.forEach(function(s){
-                    html += `<li class="list-group-item d-flex align-items-center service-item" data-id="${s.id}" data-name="${s.name}">
-                        <div>
-                            <strong>${s.name}</strong> <span class="text-muted small">(${s.code})</span>
-                            <div class="text-muted small">${s.category}</div>
-                        </div>
-                    </li>`;
-                });
-                html += '</ul>';
-            }
-            document.getElementById('service_list_box').innerHTML = html;
-            document.querySelectorAll('.service-item').forEach(function(item){
-                item.addEventListener('click', function(){
-                    addToSaleList({
-                        id: this.dataset.id,
-                        name: this.dataset.name,
-                        type: 'service'
-                    });
-                });
-            });
-        });
-}
-
-// لیست فروش (نمونه - باید با سیستم فروش واقعی هماهنگ شود)
-let saleList = [];
-function addToSaleList(item) {
-    saleList.push(item);
-    renderSaleList();
-}
-function renderSaleList() {
-    let html = '';
-    if(saleList.length === 0) html = '<div class="text-muted">محصول/خدمتی انتخاب نشده.</div>';
-    else {
-        html = '<ul class="list-group">';
-        saleList.forEach(function(it, idx){
-            html += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                ${it.type === 'product' ? '🛒' : '💼'} ${it.name}
-                <button class="btn btn-sm btn-danger ms-2" onclick="removeFromSaleList(${idx})">حذف</button>
-            </li>`;
-        });
-        html += '</ul>';
+    function triggerFileInput(inputId) {
+        document.getElementById(inputId).click();
     }
-    document.getElementById('sale_items_box').innerHTML = html;
-}
-function removeFromSaleList(idx) {
-    saleList.splice(idx, 1);
-    renderSaleList();
-}
 </script>
 @endsection

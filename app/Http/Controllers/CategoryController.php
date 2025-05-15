@@ -37,17 +37,17 @@ class CategoryController extends Controller
             'nextPersonCode', 'nextProductCode', 'nextServiceCode'
         ));
     }
-public function personSearch(Request $request)
-{
-    $query = $request->input('q');
-    $categories = \App\Models\Category::whereIn('category_type', ['اشخاص', 'person']) // اینجا!
-        ->where('name', 'like', "%$query%")
-        ->limit(20)
-        ->get(['id', 'name']);
-    return response()->json($categories->map(function($cat){
-        return ['id' => $cat->id, 'text' => $cat->name];
-    }));
-}
+    public function personSearch(Request $request)
+    {
+        $query = $request->input('q');
+        $categories = \App\Models\Category::whereIn('category_type', ['اشخاص', 'person'])
+            ->where('name', 'like', "%$query%")
+            ->limit(20)
+            ->get(['id', 'name']);
+        return response()->json($categories->map(function($cat){
+            return ['id' => $cat->id, 'text' => $cat->name];
+        }));
+    }
     public function store(Request $request)
     {
         $request->validate([
@@ -59,8 +59,9 @@ public function personSearch(Request $request)
             'image' => 'nullable|image|max:2048'
         ]);
 
-        $date = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $request->date)->toCarbon();
-        $dueDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $request->dueDate)->toCarbon();
+        // حذف خطوط مربوط به تاریخ:
+        // $date = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $request->date)->toCarbon();
+        // $dueDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $request->dueDate)->toCarbon();
 
         $data = $request->only(['name', 'code', 'category_type', 'parent_id', 'description']);
         if (empty($data['code'])) {
@@ -122,9 +123,9 @@ public function personSearch(Request $request)
         return redirect()->route('categories.index')->with('success', 'دسته‌بندی با موفقیت حذف شد.');
     }
 
-public function apiList()
-{
-    $categories = \App\Models\Category::orderBy('name')->get(['id', 'name', 'code', 'category_type', 'parent_id']);
-    return response()->json($categories);
-}
+    public function apiList()
+    {
+        $categories = \App\Models\Category::orderBy('name')->get(['id', 'name', 'code', 'category_type', 'parent_id']);
+        return response()->json($categories);
+    }
 }

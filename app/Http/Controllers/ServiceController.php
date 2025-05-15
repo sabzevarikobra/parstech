@@ -69,4 +69,35 @@ public function create()
         //
     }
 
+    // اضافه به ServiceController
+    public function ajaxList(Request $request)
+    {
+        $query = \App\Models\Service::with('category')->where('is_active', 1);
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        } else {
+            $catIds = \App\Models\Category::where('category_type', 'service')->pluck('id');
+            $query->whereIn('category_id', $catIds);
+        }
+
+        if ($request->filled('q')) {
+            $q = $request->input('q');
+            $query->where(function($q2) use ($q) {
+                $q2->where('name', 'like', "%$q%")
+                    ->orWhere('code', 'like', "%$q%");
+            });
+        }
+
+        $services = $query->limit(10)->get();
+        return response()->json($services->map(function($s){
+            return [
+                'id' => $s->id,
+                'name' => $s->name,
+                'code' => $s->code,
+                'category' => $s->category ? $s->category->name : ''
+            ];
+        }));
+    }
+
 }

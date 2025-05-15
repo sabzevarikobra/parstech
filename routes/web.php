@@ -29,6 +29,9 @@ use App\Models\Person;
 use Illuminate\Http\Request;
 use App\Http\Controllers\SaleController;
 
+use App\Http\Controllers\Api\CategoryApiController;
+use App\Http\Controllers\Api\ProductApiController;
+use App\Http\Controllers\Api\ServiceApiController;
 
 Route::get('/sales/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
 
@@ -213,4 +216,10 @@ Route::get('persons/next-code', [PersonController::class, 'nextCode'])->name('pe
 Route::resource('sales', SaleController::class);
 Route::get('/api/invoices/next-number', [\App\Http\Controllers\SaleController::class, 'nextInvoiceNumber']);
 
+// ایجکس محصولات و خدمات
+Route::get('/products/ajax-list', [\App\Http\Controllers\ProductController::class, 'ajaxList']);
+Route::get('/services/ajax-list', [\App\Http\Controllers\ServiceController::class, 'ajaxList']);
+Route::get('/categories', [CategoryApiController::class, 'index']);
+Route::get('/products', [ProductApiController::class, 'index']);
+Route::get('/services', [ServiceApiController::class, 'index']);
 require __DIR__.'/auth.php';

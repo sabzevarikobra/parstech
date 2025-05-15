@@ -234,11 +234,11 @@ function showTab(type) {
 
 document.addEventListener("DOMContentLoaded", function() {
     showTab('product');
-    // لود اولیه لیست محصولات/خدمات
     loadProducts();
     loadServices();
 });
 
+// نمایش تصویر انتخابی
 function previewImage(input, imgId) {
     if (input.files && input.files[0]) {
         var reader = new FileReader();
@@ -278,7 +278,6 @@ function loadProducts() {
                 html += '</ul>';
             }
             document.getElementById('product_list_box').innerHTML = html;
-            // رویداد کلیک برای اضافه شدن به لیست فروش
             document.querySelectorAll('.product-item').forEach(function(item){
                 item.addEventListener('click', function(){
                     addToSaleList({
@@ -316,7 +315,6 @@ function loadServices() {
                 html += '</ul>';
             }
             document.getElementById('service_list_box').innerHTML = html;
-            // رویداد کلیک برای اضافه شدن به لیست فروش
             document.querySelectorAll('.service-item').forEach(function(item){
                 item.addEventListener('click', function(){
                     addToSaleList({

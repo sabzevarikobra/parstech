@@ -33,6 +33,10 @@ use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\ProductApiController;
 use App\Http\Controllers\Api\ServiceApiController;
 
+
+
+
+
 Route::get('/sales/invoices/create', [InvoiceController::class, 'create'])->name('invoices.create');
 
 // Landing page
